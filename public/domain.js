@@ -27,7 +27,7 @@ export function streakFor(entries,now=new Date()){
   const readToday=dates.includes(today);let streak=0;
   if(dates.length&&(dates[0]===today||dates[0]===shiftDay(today,-1))){streak=1;for(let i=1;i<dates.length&&dayDiff(dates[i],dates[i-1])===1;i++)streak++;}
   const msUntilMidnight=parisMidnight(shiftDay(c.today,1))-new Date(now).getTime();
-  const atRisk=c.status==='running'&&streak>=2&&!readToday&&msUntilMidnight>0&&msUntilMidnight<6*3600000;
+  const atRisk=c.status==='running'&&streak>=2&&!readToday&&msUntilMidnight>0&&msUntilMidnight<8*3600000;
   return {streak,readToday,atRisk,msUntilMidnight,activeDays:dates.length,dates};
 }
 export function snapshot(readers,entries,now=new Date()){
