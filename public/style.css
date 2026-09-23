@@ -500,6 +500,7 @@ svg {
   color: #d5e5c7;
   padding: 4px 9px;
   border-radius: 50px;
+  white-space: nowrap;
 }
 .page-counter {
   display: flex;
