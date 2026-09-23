@@ -65,3 +65,5 @@ Aucune dépendance à installer : Node 22 suffit.
 
 Les inscrits et leurs pages sont dans une base **Upstash Redis** branchée par Vercel. Les clés d'accès restent dans
 les réglages Vercel : ne jamais ajouter de fichier `.env` au dépôt.
+
+<sub>Icône des mains jointes : [Phosphor Icons](https://phosphoricons.com) (« hands-praying »), licence MIT.</sub>

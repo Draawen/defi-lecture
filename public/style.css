@@ -149,10 +149,11 @@
   font-size: 28px;
   writing-mode: horizontal-tb;
 }
-.book-drawing {
-  font-size: 69px;
+.book-back .book-drawing {
+  width: 58px;
+  height: 58px;
   color: #eccc9b;
-  line-height: 1;
+  stroke-width: 2.3;
 }
 .book-front {
   width: 175px;
@@ -173,47 +174,10 @@
 .book-name i {
   color: #d3d6a9;
 }
-.cover-flower {
-  position: relative;
+.cover-hands {
   width: 76px;
   height: 76px;
-  margin: 0 auto;
-}
-.cover-flower i {
-  position: absolute;
-  display: block;
-  width: 20px;
-  height: 40px;
-  border-radius: 50%;
-  background: #c6c998;
-  left: 28px;
-  top: -1px;
-  transform-origin: center 39px;
-}
-.cover-flower i:nth-child(2) {
-  transform: rotate(60deg);
-}
-.cover-flower i:nth-child(3) {
-  transform: rotate(120deg);
-}
-.cover-flower i:nth-child(4) {
-  transform: rotate(180deg);
-}
-.cover-flower i:nth-child(5) {
-  transform: rotate(240deg);
-}
-.cover-flower i:nth-child(6) {
-  transform: rotate(300deg);
-}
-.cover-flower b {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background: #d59b72;
-  border: 3px solid #385e4e;
-  border-radius: 50%;
-  left: 28px;
-  top: 28px;
+  color: #c6c998;
 }
 :root {
   --paper: #f8f6f0;
@@ -1080,8 +1044,9 @@ footer {
 footer em {
   font: 400 13px var(--serif);
 }
-footer > span:last-child {
-  font-size: 23px;
+footer .footer-cross {
+  width: 22px;
+  height: 22px;
   color: #b79b63;
 }
 .empty-state {
@@ -1964,7 +1929,7 @@ dialog h2 .streak-badge {
 }
 @media (max-width: 365px) {
   .hero-art {
-    right: -34px;
+    right: -22px;
   }
   .hero h1 {
     font-size: 36px;

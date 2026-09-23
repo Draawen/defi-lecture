@@ -63,6 +63,15 @@
       <symbol id="i-share" viewbox="0 0 24 24">
         <path d="M12 16V3m-5 5 5-5 5 5M5 13v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"></path>
       </symbol>
+      <symbol id="i-cross" viewbox="0 0 24 24"><path d="M12 2.5v19M6.5 8.5h11"></path></symbol>
+      <!-- Phosphor Icons "hands-praying" (regular), MIT licence: a filled path, styled with fill. -->
+      <symbol id="i-pray" viewbox="0 0 256 256">
+        <path
+          fill="currentColor"
+          stroke="none"
+          d="M235.32,180l-36.24-36.25L162.62,23.46A21.76,21.76,0,0,0,128,12.93,21.76,21.76,0,0,0,93.38,23.46L56.92,143.76,20.68,180a16,16,0,0,0,0,22.62l32.69,32.69a16,16,0,0,0,22.63,0L124.28,187a40.68,40.68,0,0,0,3.72-4.29,40.68,40.68,0,0,0,3.72,4.29L180,235.32a16,16,0,0,0,22.63,0l32.69-32.69A16,16,0,0,0,235.32,180ZM64.68,224,32,191.32l12.69-12.69,32.69,32.69ZM120,158.75a23.85,23.85,0,0,1-7,17L88.68,200,56,167.32l13.65-13.66a8,8,0,0,0,2-3.34l37-122.22A5.78,5.78,0,0,1,120,29.78Zm23,17a23.85,23.85,0,0,1-7-17v-129a5.78,5.78,0,0,1,11.31-1.68l37,122.22a8,8,0,0,0,2,3.34l14.49,14.49-33.4,32ZM191.32,224l-12.56-12.57,33.39-32L224,191.32Z"
+        ></path>
+      </symbol>
     </svg>
     <header class="wrap site-header">
       <a href="#" class="brand" aria-label="Le défi lecture, accueil"
@@ -94,7 +103,8 @@
               <span class="book-spine"></span>
               <div class="book-cover">
                 <span class="book-small">UN NOUVEAU</span><span class="book-name">chapitre</span
-                ><span class="book-drawing">✳</span><span class="book-small">COMMENCE ICI</span>
+                ><svg class="icon book-drawing"><use href="#i-cross" /></svg
+                ><span class="book-small">COMMENCE ICI</span>
               </div>
               <div class="book-pages"></div>
             </div>
@@ -103,7 +113,7 @@
               <div class="book-cover">
                 <span class="book-small">PRENDRE LE TEMPS DE</span
                 ><span class="book-name">grandir<br /><i>ensemble.</i></span>
-                <div class="cover-flower"><i></i><i></i><i></i><i></i><i></i><i></i><b></b></div>
+                <svg class="cover-hands"><use href="#i-pray" /></svg>
                 <span class="book-small">UNE PAGE À LA FOIS</span>
               </div>
               <div class="book-pages"></div>
@@ -260,7 +270,7 @@
       </div>
       <footer>
         <span>Un peu chaque jour, <em>beaucoup ensemble.</em></span
-        ><span aria-hidden="true">✳</span>
+        ><svg class="icon footer-cross" aria-hidden="true"><use href="#i-cross" /></svg>
       </footer>
     </main>
     <dialog id="dialog" aria-labelledby="dialog-title">
