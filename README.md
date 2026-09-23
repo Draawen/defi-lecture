@@ -40,8 +40,9 @@ Aucune dépendance à installer : Node 22 suffit.
 
 ## Travailler sur le site
 
-1. Crée une branche et pousse-la : Vercel publie un **lien d'aperçu** de ta branche. Les aperçus ont leur **propre
-   espace de données**, tu peux y tester sans toucher aux vrais lecteurs.
+1. Crée une branche et pousse-la : Vercel publie un **lien d'aperçu** de ta branche (pour l'instant, seul le
+   propriétaire du projet Vercel peut l'ouvrir). Les aperçus ont leur **propre espace de données** : on y teste sans
+   toucher aux vrais lecteurs.
 2. Ouvre une pull request. Une fois fusionnée dans `main`, le site en ligne se met à jour tout seul (environ 30 s).
 3. Avant de pousser :
 
