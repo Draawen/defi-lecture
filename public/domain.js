@@ -21,19 +21,18 @@ export function challengeState(now=new Date()){
   const target=status==='scheduled'?parisMidnight(CONFIG.startDate):parisMidnight(shiftDay(CONFIG.endDate,1));
   return {...CONFIG,today,status,duration,dayNumber:Math.min(duration,Math.max(0,dayDiff(CONFIG.startDate,today)+1)),daysLeft:status==='scheduled'?duration:Math.max(0,dayDiff(today,CONFIG.endDate)+1),daysUntilStart:Math.max(0,dayDiff(today,CONFIG.startDate)),deadline:target,serverTime:new Date(now).toISOString()};
 }
-// A streak lives while each reading comes at most 24 h after the previous one and the last one is under 24 h old;
-// it counts the distinct Paris days of that chain. The hourglass shows in its last 8 hours.
+// A streak counts consecutive Paris days with a reading; it breaks at midnight at the end of the day after the last
+// reading. The hourglass shows from 18 h after the last reading (6 h before the 24 h mark) until that break.
 export function streakFor(entries,now=new Date()){
-  const c=challengeState(now),at=c.status==='finished'?c.deadline:new Date(now).getTime();
-  const live=entries.filter(e=>!e.deletedAt&&e.pages>0&&e.readDate>=CONFIG.startDate&&e.readDate<=CONFIG.endDate);
+  const c=challengeState(now),today=c.status==='finished'?CONFIG.endDate:c.today,at=c.status==='finished'?c.deadline:new Date(now).getTime();
+  const live=entries.filter(e=>!e.deletedAt&&e.pages>0&&e.readDate>=CONFIG.startDate&&e.readDate<=today);
   const dates=[...new Set(live.map(e=>e.readDate))].sort().reverse(),times=[...new Set(live.map(e=>e.createdAt))].sort().reverse();
   let streak=0,expiresAt=null;
-  if(times.length&&Date.parse(times[0])+DAY>at){
-    expiresAt=Date.parse(times[0])+DAY;const days=new Set([parisDate(times[0])]);
-    for(let i=1;i<times.length&&Date.parse(times[i-1])-Date.parse(times[i])<=DAY;i++)days.add(parisDate(times[i]));
-    streak=days.size;
+  if(dates.length&&(dates[0]===today||dates[0]===shiftDay(today,-1))){
+    streak=1;for(let i=1;i<dates.length&&dayDiff(dates[i],dates[i-1])===1;i++)streak++;
+    expiresAt=parisMidnight(shiftDay(dates[0],2));
   }
-  const atRisk=c.status==='running'&&streak>=2&&expiresAt-at<8*3600000;
+  const atRisk=c.status==='running'&&streak>=2&&at>=Date.parse(times[0])+DAY-6*3600000;
   return {streak,atRisk,expiresAt,activeDays:dates.length,dates,times};
 }
 export function snapshot(readers,entries,now=new Date()){
