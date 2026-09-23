@@ -1,244 +1,285 @@
 <!doctype html>
-<html lang="fr"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#234f42"><meta name="robots" content="noindex,nofollow">
-<link rel="manifest" href="/manifest.webmanifest"><link rel="icon" type="image/png" href="/icon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Défi lecture">
-<meta name="description" content="90 jours pour lire, du 27 septembre au 25 décembre 2026. 3 000 pages ensemble, chacun à son rythme.">
-<title>Le défi lecture · Ensemble, page après page</title>
-<script>/* Once the challenge has started, skip the intro without a flash; the page script confirms with the server clock. */if(Date.now()>=Date.parse('2026-09-26T22:00:00Z'))document.documentElement.classList.add('is-live')</script>
-
-<style>.book-scene{height:340px;position:relative;max-width:450px;width:100%;justify-self:end}.scene-arch{position:absolute;width:290px;height:305px;border-radius:160px 160px 45px 45px;background:#eee3d0;left:70px;top:17px;transform:rotate(8deg)}.scene-orbit{position:absolute;width:360px;height:220px;left:18px;top:103px;border:1px solid #d9ccac;border-radius:50%;transform:rotate(-20deg)}.scene-orbit:after{content:'';height:8px;width:8px;background:#baba9b;border:3px solid var(--paper);border-radius:50%;position:absolute;left:40px;bottom:4px}.scene-spark{position:absolute;color:#a29a6d;z-index:4}.spark-one{font-size:29px;left:27px;top:73px;transform:rotate(-15deg)}.spark-two{font-size:41px;right:5px;top:148px}.spark-three{font-size:18px;left:113px;bottom:8px}.round-stamp{position:absolute;z-index:5;right:15px;top:2px;width:89px;height:89px;border:1px solid #b8bb98;background:#e6e8cf;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(12deg);box-shadow:0 0 0 5px var(--paper)}.round-stamp span{font-size:6px;letter-spacing:1px}.round-stamp strong{font:36px/.98 var(--serif);margin:6px 0 5px}.book{position:absolute;perspective:600px;border-radius:3px 7px 7px 3px;box-shadow:8px 14px 12px #463b2820;transform-style:preserve-3d}.book-cover{position:relative;height:100%;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;padding:21px 16px 18px 22px;border-radius:3px 7px 7px 3px;overflow:hidden;z-index:2}.book-spine{position:absolute;width:13px;top:0;bottom:0;left:0;background:#00000013;border-right:1px solid #ffffff20;z-index:3;border-radius:3px 0 0 3px}.book-small{font-size:6px;letter-spacing:1.6px;line-height:1.8}.book-name{font:29px/1.12 var(--serif);letter-spacing:-1px}.book-pages{position:absolute;top:5px;bottom:-7px;left:3px;right:-7px;background:repeating-linear-gradient(90deg,#e8dfcc 0px,#e8dfcc 1px,#f5f0e3 1px,#f5f0e3 3px);border-radius:3px 7px 7px 3px;box-shadow:1px 1px 1px #55422950;transform:translateZ(-10px)}.book-back{width:148px;height:216px;left:54px;top:78px;transform:rotate(-17deg);color:#f9efdc}.book-back .book-cover{background:#b97553;border:1px solid #a26749}.book-back .book-name{font-size:28px;writing-mode:horizontal-tb}.book-drawing{font-size:69px;color:#eccc9b;line-height:1}.book-front{width:175px;height:252px;left:192px;top:62px;transform:rotate(9deg);color:#f9f5e7;z-index:4}.book-front .book-cover{background:#385e4e;border:1px solid #2d5140}.book-front .book-name{font-size:27px}.book-name i{color:#d3d6a9}.cover-flower{position:relative;width:76px;height:76px;margin:0 auto}.cover-flower i{position:absolute;display:block;width:20px;height:40px;border-radius:50%;background:#c6c998;left:28px;top:-1px;transform-origin:center 39px}.cover-flower i:nth-child(2){transform:rotate(60deg)}.cover-flower i:nth-child(3){transform:rotate(120deg)}.cover-flower i:nth-child(4){transform:rotate(180deg)}.cover-flower i:nth-child(5){transform:rotate(240deg)}.cover-flower i:nth-child(6){transform:rotate(300deg)}.cover-flower b{position:absolute;width:20px;height:20px;background:#d59b72;border:3px solid #385e4e;border-radius:50%;left:28px;top:28px}.scene-caption{position:absolute;left:6px;bottom:20px;font:13px/1.5 var(--serif);color:#88836a;transform:rotate(-8deg)}.scene-caption em{color:#697b5e}
-
-:root{--paper:#f8f6f0;--white:#fffefa;--ink:#243c33;--green:#234f42;--green-deep:#1d4136;--sage:#e8ede3;--lime:#cbdc9d;--muted:#72766b;--line:#e0e3d7;--terra:#ba6349;--peach:#f0ddc8;--serif:Georgia,'Times New Roman',serif;--sans:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.6 var(--sans);-webkit-font-smoothing:antialiased}button,input{font:inherit;color:inherit}button{cursor:pointer}button:disabled{cursor:wait;opacity:.55}a{color:inherit}button,a,input,summary{touch-action:manipulation;-webkit-tap-highlight-color:transparent}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--terra);outline-offset:4px}svg{display:block}.icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.icon-sprite{width:0;height:0;position:absolute;overflow:hidden}[hidden]{display:none!important}.wrap{width:min(1120px,calc(100% - 72px));margin-inline:auto}.skip-link{position:fixed;top:-100px;z-index:300;padding:12px;background:var(--white)}.skip-link:focus{top:0}.site-header{height:86px;display:flex;align-items:center;justify-content:space-between;gap:15px;border-bottom:1px solid #e3e3d766}.brand{display:flex;align-items:center;gap:11px;text-decoration:none;font-size:22px;letter-spacing:-.7px;line-height:1.1}.brand-icon{width:42px;height:42px;background:var(--green);color:var(--white);border-radius:11px;display:grid;place-items:center}.brand-icon .icon{width:24px;height:24px}.brand small{display:block;font:7px/2 var(--sans);letter-spacing:1.7px;margin-top:5px}.brand strong{font-weight:650}.edition{display:flex;align-items:center;gap:9px;font-size:11px;color:var(--muted)}.edition .icon{width:16px;height:16px}.hero{display:flex;align-items:center;justify-content:space-between;position:relative;min-height:257px;padding:30px 0 33px}.hero-copy{position:relative;z-index:1}.eyebrow{font:650 9px/1.6 var(--sans);letter-spacing:1.6px;display:inline-flex;align-items:center;gap:7px;color:#717c67}.tiny-star{color:var(--terra);font-size:21px;line-height:1;margin-right:3px}.hero h1{font:400 clamp(35px,4.4vw,57px)/1.18 var(--serif);letter-spacing:-2.4px;margin:11px 0 14px;position:relative}.hero h1 em{color:var(--terra);position:relative;font-weight:400}.hero h1 em:after{content:'';height:6px;width:105%;position:absolute;left:-1px;bottom:-3px;border-top:1px solid var(--terra);border-radius:50%}.title-spark{display:inline-block;width:26px;height:26px;color:#b09a62;vertical-align:middle;margin-left:15px;stroke-width:1.2}.hero-sub{font-size:13px;color:var(--muted);margin:0;line-height:1.85}.hero-sub strong{font-weight:500;color:var(--ink)}.hero-art{width:285px;height:225px;position:relative;flex-shrink:0;pointer-events:none}.hero-art .book-scene{position:absolute;transform:scale(.56);transform-origin:top left;width:480px;height:405px;left:0;top:-6px}.hero-art .scene-caption{display:none}
-.mission{display:grid;grid-template-columns:minmax(0,1fr) 229px;gap:30px;background:var(--green);color:#f6f8ed;border-radius:24px;padding:30px;position:relative;overflow:hidden;box-shadow:0 10px 25px #234f4205}.mission:before{content:'';position:absolute;pointer-events:none;width:360px;height:360px;right:70px;top:-265px;border:1px solid #ffffff06;border-radius:50%}.mission-main{min-width:0;z-index:1}.mission-top{display:flex;justify-content:space-between;align-items:center;gap:10px}.mission-eyebrow{font-size:8px;color:#c1d1b3;letter-spacing:1.4px}.status-dot{width:6px;height:6px;background:var(--lime);border-radius:50%;display:inline-block}.day-chip{font:500 10px/1.5 var(--sans);color:#d2e0cb;background:#ffffff0b;padding:4px 9px;border:1px solid #ffffff13;border-radius:7px;white-space:nowrap}.mission-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}.mission h2{font:400 26px/1.25 var(--serif);margin:0;letter-spacing:-.6px}.percent-pill{font-size:10px;font-weight:600;background:#ffffff11;color:#d5e5c7;padding:4px 9px;border-radius:50px}.page-counter{display:flex;align-items:baseline;gap:15px;margin-top:5px;position:relative}.page-counter>strong{font-size:54px;font-weight:560;letter-spacing:-1.6px;font-variant-numeric:tabular-nums;line-height:1.5}.page-counter>span{font-size:22px;font-weight:300;color:#a8c1a7}.page-counter small{font-size:11px;margin-left:5px;font-weight:400}.counter-spark{position:absolute;right:16px;top:25px;width:27px;height:27px;color:#a5bc7e;stroke-width:1.1}.segmented-progress{display:grid;grid-template-columns:repeat(30,1fr);gap:4px;margin:10px 0 11px}.segment{display:block;position:relative;height:14px;background:#ffffff14;border-radius:3px;overflow:hidden;box-shadow:inset 0 1px 0 #ffffff04}.segment i{display:block;height:100%;width:0;background:var(--lime);border-radius:2px;transition:width .5s ease}.mission-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#c1d3bb;font-size:10px}.readers-stat{display:flex;align-items:center;gap:6px;white-space:nowrap}.readers-stat .icon{width:14px;height:14px}.launch-note{margin:6px 0 18px}.launch-text{font-size:13px;line-height:1.7;color:#c9d8c2;margin:0 0 17px}.mission.is-scheduled h2{font-size:34px;letter-spacing:-1px}.countdown-card{background:#ffffff03;border:1px solid #ffffff18;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 17px;position:relative}.countdown-card>.eyebrow{color:#c7d7ba;font-size:8px;letter-spacing:1.5px}.countdown-card>strong{font:400 49px/1.25 var(--serif);letter-spacing:-2px;margin:5px 0 2px;font-variant-numeric:tabular-nums}.countdown-card>span:not(.eyebrow):not(.countdown-end){font-size:9px;color:#bfd0b7}.time-digits{display:flex;align-items:flex-start;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid #ffffff15;font-variant-numeric:tabular-nums}.time-digits span{text-align:center;min-width:28px}.time-digits b{font-size:16px;font-weight:500;line-height:1}.time-digits small{display:block;color:#becdb9;font-size:8px;margin-top:1px}.time-digits i{font-style:normal;opacity:.35;font-size:13px}.countdown-end{display:flex;align-items:center;gap:6px;font-size:8px;color:#bfd0b7;margin-top:12px}.countdown-end .icon{width:12px;height:12px}.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:24px 4px 25px;border-bottom:1px solid var(--line);margin-bottom:37px}.rules article{display:flex;gap:12px;align-items:center}.rules article+article{border-left:1px solid var(--line);padding-left:21px}.rule-icon{background:#e9e9d6;color:#798158;width:41px;height:41px;display:grid;place-items:center;border-radius:12px;flex-shrink:0}.rule-icon.peach{background:#f0e4d8;color:#a87552}.rule-icon.sage{background:#e7ece3;color:#759074}.rule-icon .icon{width:22px;height:22px;stroke-width:1.5}.rules h3{font:600 12px/1.6 var(--sans);margin:0}.rules h3 small{font:400 10px var(--serif);color:#8c9782;margin-right:4px}.rules p{font-size:10px;line-height:1.5;color:var(--muted);margin:3px 0 0}.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.section-heading h2{font:400 29px/1.25 var(--serif);letter-spacing:-.75px;margin:5px 0 0}.section-heading>.eyebrow{font-size:8px}.count-pill{display:inline-block;background:#e8edde;color:#6c7c5f;font:600 11px/1.5 var(--sans);padding:2px 7px;border-radius:6px;vertical-align:middle;margin-left:4px;letter-spacing:0}.button{min-height:44px;padding:10px 17px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:9px;font-size:12px;font-weight:600;transition:background .15s,transform .15s}.button .icon{width:17px;height:17px}.button:hover:not(:disabled){transform:translateY(-1px)}.button-primary{background:var(--terra);color:#fff}.button-primary:hover:not(:disabled){background:#a9543d}.button-green{background:var(--green);color:var(--white)}.button-outline{border-color:var(--line);background:transparent}.reader-toolbar{display:flex;flex-direction:column;gap:8px;margin:18px 0 16px}.reader-toolbar p{margin:0 0 0 4px;font-size:11px;color:var(--muted)}.search{display:flex;align-items:center;gap:11px;border:1.5px solid #c9d3bd;background:var(--white);padding:0 16px;min-height:52px;border-radius:12px;width:100%;box-shadow:0 2px 10px #234f420b;cursor:text}.search .icon{width:20px;height:20px;color:var(--green)}.search input{border:0;background:transparent;outline:none;width:100%;font-size:16px;min-width:0}.search:focus-within{border-color:var(--green);box-shadow:0 0 0 3px #234f421c}.search input::placeholder{color:#8b927f}.people-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.person{position:relative;text-align:left;padding:13px 13px 12px;background:var(--white);border:1px solid var(--line);border-radius:12px;min-width:0;transition:background .2s,border-color .2s,transform .2s}.person:hover{background:#f1f3e9;border-color:#becbad;transform:translateY(-2px)}.person.selected{border-color:#80976c;background:#f0f3e6}.person-line{display:flex;align-items:center;gap:7px;min-width:0}.avatar{width:29px;height:29px;flex-shrink:0;display:grid;place-items:center;border-radius:50%;font:400 14px/1 var(--serif);background:#e8edde;color:#718259}.avatar.peach{background:#f3e5da;color:#aa7757}.avatar.gray{background:#e8ebe5;color:#7b8274}.avatar.sand{background:#f1ead3;color:#b09658}.person-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.person-title{min-width:0;flex:1}.person-you{font-size:8px;color:#748a56;line-height:1.3}.streak-badge{display:flex;align-items:center;gap:2px;color:#ae613e;font-size:10px;font-weight:650;white-space:nowrap;line-height:1.2}.streak-badge .hourglass{margin-left:2px}.person-data{display:flex;align-items:center;justify-content:space-between;gap:4px;margin:11px 0 7px;font-size:10px;color:#828776;font-variant-numeric:tabular-nums}.person-data strong{font-weight:500;color:#586c48}.person-data .reached{color:#718945;display:flex;align-items:center;gap:3px;font-size:9px}.reached .icon{width:12px;height:12px}.mini{height:4px;background:#e8ebdf;border-radius:9px;overflow:hidden}.mini>i{display:block;height:100%;background:#9cb577;border-radius:9px;transition:width .3s}.community-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:48px;margin:43px 0 0;border-top:1px solid var(--line);padding-top:30px}.community-grid .section-heading h2{font-size:26px}.community-grid .eyebrow{font-size:8px;letter-spacing:1.4px}.section-doodle{width:23px;height:23px;color:#93a17e;transform:rotate(-9deg)}.section-doodle.star-doodle{color:#b5a16c;width:25px;height:25px}.activity-dot{width:5px;height:5px;background:#7e9d69;border-radius:50%;display:inline-block}.activity-list{margin-top:17px}.activity-row{width:100%;display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:10px;text-align:left;border:0;border-bottom:1px solid #e6e7de;background:transparent;padding:10px 0}.activity-row:hover{background:#eef1e566}.activity-row strong{font-size:11px;font-weight:550}.activity-row .activity-detail{font-size:10px;color:var(--muted)}.activity-detail b{font-weight:500;color:#697c56}.activity-time{font-size:9px;color:#878e7d;text-align:right;white-space:nowrap;line-height:1.5}.activity-time time{display:block;font-size:11px;color:#53674d;font-variant-numeric:tabular-nums}.tabs{display:flex;background:#eceee4;border:1px solid #e4e7da;padding:3px;border-radius:9px;margin:20px 0 7px;gap:3px}.tabs button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:6px;background:transparent;padding:8px 5px;color:#77816c;font-size:11px;white-space:nowrap}.tabs button[aria-selected=true]{background:var(--white);box-shadow:0 1px 4px #234f4210;color:var(--green);font-weight:600}.tabs .icon{width:14px;height:14px}.leader-row{width:100%;display:grid;grid-template-columns:24px 28px 1fr auto;align-items:center;gap:9px;border:0;border-bottom:1px solid #e6e7de;background:transparent;padding:13px 0;text-align:left}.leader-row:hover{background:#edf0e3}.rank{font-size:12px;color:#8c957f;font-family:var(--serif)}.leader-row:first-child .rank{color:#a6853d}.leader-row .avatar{width:26px;height:26px;font-size:12px}.leader-name{font-size:11px;font-weight:550;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.leader-value{font-size:12px;font-weight:500;color:#536e44;font-variant-numeric:tabular-nums}.micro-copy{font-size:9px;line-height:1.65;color:#818976;margin-top:13px}footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);margin-top:36px;padding:22px 0 28px;color:#8a927e;font-size:10px}footer em{font:400 13px var(--serif)}footer>span:last-child{font-size:23px;color:#b79b63}.empty-state{font-size:12px;color:var(--muted);padding:20px 0;grid-column:1/-1}.connection{padding:12px 16px;border:1px solid #e5c9ac;background:#fff3e6;border-radius:10px;font-size:12px;margin:15px 0}.connection button{border:0;background:transparent;text-decoration:underline;padding:2px;font:inherit;margin-left:6px}
-dialog{border:1px solid #e8e7db;border-radius:23px;padding:0;width:min(445px,calc(100% - 26px));max-height:calc(100dvh - 40px);overflow:auto;color:var(--ink);background:var(--white);box-shadow:0 30px 100px #173d3438}dialog::backdrop{background:#172d2566;backdrop-filter:blur(3px)}#dialog-body{padding:29px}.dialog-close{position:absolute;right:13px;top:13px;width:33px;height:33px;display:grid;place-items:center;border:0;border-radius:50%;background:#eeeee5;color:#7b856d}.dialog-close .icon{width:16px;height:16px}dialog h2{font:400 35px/1.2 var(--serif);letter-spacing:-1px;margin:8px 0 13px;padding-right:40px}dialog .eyebrow{font-size:9px}dialog .intro-copy{font-size:12px;color:var(--muted);margin:0 0 18px}label.field-label{display:block;font-size:12px;font-weight:550;margin:20px 0 7px}.field{width:100%;border:1px solid #dce1d1;background:#fafaf4;border-radius:10px;min-height:46px;padding:11px 13px;font-size:16px;outline:0}.field:focus{border-color:#859d70;box-shadow:0 0 0 3px #afbf9922}.goals{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.goal{position:relative;cursor:pointer}.goal input{opacity:0;position:absolute;inset:0;width:100%;height:100%;cursor:pointer;margin:0}.goal span{display:block;text-align:center;border:1px solid var(--line);border-radius:12px;padding:13px 4px;transition:.15s;font-size:20px}.goal b{display:block;font-size:19px;font-weight:600;margin-top:4px}.goal small{font-size:10px;display:block;color:var(--muted)}.goal input:checked+span{border-color:#6f8c59;background:#edf2e0;box-shadow:inset 0 0 0 1px #6f8c59}.goal input:focus-visible+span{outline:3px solid var(--terra);outline-offset:3px}.full{width:100%;margin-top:22px}.form-error{font-size:12px;color:#a34934;background:#f9ece3;border-radius:7px;padding:8px 10px;margin-top:12px}.hint{font-size:10px;color:var(--muted);margin:11px 0 0}.profile-total{font-size:38px;line-height:1.2;letter-spacing:-1px;margin:16px 0 10px;font-variant-numeric:tabular-nums}.profile-total small{font-size:12px;color:var(--muted);letter-spacing:0}.profile-progress{height:6px}.profile-caption{display:flex;justify-content:space-between;font-size:10px;color:#728061;margin-top:8px}.profile-streak{border-radius:12px;background:#f6f0e4;padding:12px 14px;margin-top:20px}.profile-streak>strong{font-weight:550;font-size:12px;color:#a26441}.profile-streak>p{font-size:10px;color:#897860;margin:3px 0 0}.week{display:flex;gap:8px;justify-content:space-between;margin-top:12px}.week-day{font-size:9px;color:#92836e;text-align:center}.week-day i{font-style:normal;width:25px;height:25px;border-radius:50%;border:1px solid #ded8c7;display:grid;place-items:center;color:#b7b6a6;margin:4px 0 0}.week-day.read i{background:#c4d295;color:#4f6342;border-color:#c4d295}.install{display:flex;justify-content:center;margin-top:40px}.install+footer{margin-top:26px}.install-button{background:var(--white);border-color:#c9d3bd;color:var(--green)}.install-steps{margin:4px 0 14px;padding-left:22px;font-size:14px;line-height:2}.install-steps .icon{display:inline-block;width:18px;height:18px;vertical-align:-3px;color:#2f6fd6}.week-day.today{font-weight:700}.week-day.off{opacity:.4}dialog h2 .streak-badge{display:inline-flex;vertical-align:middle;margin-left:10px;font:650 18px/1 var(--sans);letter-spacing:0}.cal-toggle{display:block;margin:12px auto 0;border:0;background:transparent;color:#8a6a4c;font-size:11px;text-decoration:underline;padding:4px}.calendar{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:14px 16px;align-items:start;margin-top:12px}.cal-month b{display:block;font:400 14px var(--serif);color:#8a6a4c;margin-bottom:5px}.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px 2px;text-align:center}.cal-grid i{font-style:normal;font-size:8px;color:#a3957f}.cal-day{font-size:9px;line-height:19px;height:19px;border-radius:50%;color:#8f8470;font-variant-numeric:tabular-nums}.cal-day.read{background:#c4d295;color:#3f5334;font-weight:650}.cal-day.off{opacity:.35}.cal-day.today{box-shadow:inset 0 0 0 1px #a78658}.week-day.today i{outline:1px solid #a78658;outline-offset:3px}.quick{display:grid;grid-template-columns:1fr auto;gap:8px}.quick .button{padding:10px 21px}.history{margin-top:22px;border-top:1px solid var(--line);padding-top:15px}.history h3{font:400 19px var(--serif);margin:0 0 10px}.history-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eaece2;font-size:11px}.history-row>div>small{display:block;color:#8a907f;font-size:9px;margin-top:2px}.history-row button{border:0;background:none;color:#947c68;font-size:9px;padding:7px}.history-row button:hover{text-decoration:underline}.more-history{display:block;width:100%;border:0;background:transparent;padding:10px;font-size:10px;color:#687d50}.profile-info{font-size:11px;background:#eef1e6;border-radius:9px;padding:11px;margin-top:19px}#toast{position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:999;border:1px solid #ffffff20;background:var(--green);color:var(--white);box-shadow:0 8px 30px #234f4229;border-radius:12px;padding:12px 19px;font-size:12px;text-align:center;width:max-content;max-width:calc(100% - 28px);pointer-events:none}
-@media(min-width:1180px){.person{padding:14px 14px 12px}.streak-badge{font-size:11px}}
-@media(max-width:1000px){.people-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.wrap{width:calc(100% - 48px)}.hero-art{width:220px}.hero-art .book-scene{transform:scale(.48);top:10px;left:-5px}.hero h1{font-size:47px}.title-spark{width:20px;height:20px;margin-left:10px}.mission{gap:22px;padding:26px;grid-template-columns:1fr 203px}.rules{gap:10px}.rules article+article{padding-left:13px}.rules p{font-size:9px}.community-grid{gap:30px}.mission h2{font-size:24px}}
-@media(max-width:760px){.hero-art{width:158px;height:184px}.hero-art .book-scene{transform:scale(.38);left:-16px;top:5px}.hero{min-height:223px;padding:23px 0}.hero h1{font-size:39px;letter-spacing:-1.8px;max-width:350px}.hero h1 .title-spark{display:none}.hero-sub{font-size:11px}.hero .eyebrow{font-size:8px;letter-spacing:1.2px}.mission{grid-template-columns:1fr 175px;padding:23px;gap:18px}.mission h2{font-size:21px}.page-counter>strong{font-size:43px}.page-counter>span{font-size:17px}.page-counter small{display:block;font-size:9px;margin:0}.counter-spark{right:0;width:19px;height:19px;top:18px}.segmented-progress{gap:3px}.segment{height:12px}.mission-bottom{font-size:9px}.mission-eyebrow{font-size:7px;letter-spacing:1px}.day-chip{font-size:9px}.mission.is-scheduled h2{font-size:28px}.launch-text{font-size:12px}.countdown-card{padding:15px 10px}.countdown-card>strong{font-size:42px}.time-digits{gap:3px}.time-digits b{font-size:14px}.time-digits span{min-width:23px}.countdown-end{font-size:7px}.rules{padding:21px 0;gap:8px}.rule-icon{width:33px;height:33px;border-radius:9px}.rule-icon .icon{width:19px;height:19px}.rules article{gap:8px}.rules h3{font-size:10px}.rules h3 small{display:none}.rules p{font-size:9px;max-width:150px}.people-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.community-grid .section-heading h2{font-size:23px}.community-grid .eyebrow{font-size:7px;letter-spacing:1.1px}.leader-row{gap:6px}.activity-row{gap:7px}}
-@media(max-width:580px){.wrap{width:calc(100% - 32px)}.site-header{height:74px}.brand{font-size:19px;gap:9px}.brand-icon{width:35px;height:35px;border-radius:9px}.brand-icon .icon{width:21px;height:21px}.brand small{font-size:6px;letter-spacing:1.1px}.edition{font-size:8px;gap:4px;max-width:112px}.edition .icon{width:12px;height:12px}.hero{min-height:211px;padding:23px 0 20px;align-items:flex-start;overflow:hidden}.hero-copy{max-width:78%}.hero h1{font-size:39px;max-width:265px;margin-top:11px;line-height:1.04;letter-spacing:-1.9px}.hero-sub{font-size:10px;margin-top:15px}.hero .eyebrow{font-size:7px;letter-spacing:.9px;white-space:nowrap}.tiny-star{font-size:16px;margin-right:0}.hero-art{position:absolute;right:-13px;bottom:10px;width:108px;height:143px;opacity:.94}.hero-art .book-scene{transform:scale(.28);left:-2px;top:8px}.hero-art .round-stamp{display:none}.hero-art .scene-spark{font-size:34px}.hero-art .scene-orbit{display:none}.mission{display:flex;flex-direction:column;gap:17px;padding:22px 20px 18px;border-radius:19px}.mission h2{font-size:24px}.mission-heading{margin-top:13px}.mission-eyebrow{font-size:7px;letter-spacing:1px}.page-counter{gap:11px}.page-counter>strong{font-size:48px;line-height:1.5}.page-counter>span{font-size:21px}.page-counter small{font-size:10px;display:inline;margin-left:4px}.counter-spark{right:7px;top:26px;width:22px;height:22px}.segmented-progress{gap:3px;margin-top:10px}.segment{height:11px}.mission-bottom{font-size:9px;gap:6px}.readers-stat .icon{width:12px;height:12px}.launch-note{margin:6px 0 14px}.mission.is-scheduled h2{font-size:27px}.launch-text{margin-bottom:15px}.launch-note .button{width:100%}.countdown-card{display:grid;grid-template-columns:100px 1fr;gap:0 17px;padding:12px 13px;border-radius:12px;align-items:center;justify-content:initial;text-align:center}.countdown-card>.eyebrow{font-size:7px;letter-spacing:1.1px;grid-column:1;justify-content:center}.countdown-card>strong{grid-column:1;font-size:34px;margin:0;line-height:1.2}.countdown-card>#countdown-label{grid-column:1;font-size:7px!important}.time-digits{grid-column:2;grid-row:1/4;margin:0;padding:0 0 0 11px;border-top:0;border-left:1px solid #ffffff18;justify-content:center;gap:5px;align-items:baseline}.time-digits b{font-size:17px}.time-digits small{font-size:7px}.time-digits span{min-width:23px}.countdown-end{grid-column:1/-1;justify-content:center;font-size:7px;margin-top:10px;display:none}.rules{display:flex;flex-direction:column;gap:14px;padding:23px 5px;margin-bottom:26px}.rules article+article{border:0;padding:0}.rules article{gap:12px}.rule-icon{width:33px;height:33px}.rules h3{font-size:11px}.rules h3 small{display:inline}.rules p{font-size:10px;max-width:none;margin:1px 0 0}.section-heading h2{font-size:25px}.section-heading .eyebrow{font-size:7px;letter-spacing:1.4px}.section-heading .button{padding:9px 12px;font-size:10px;min-height:40px;gap:5px}.section-heading .button .icon{width:14px;height:14px}.count-pill{font-size:10px;padding:2px 6px;margin-left:3px}.reader-toolbar{margin:14px 0 12px}.reader-toolbar p{font-size:10px}.search{min-height:50px;padding:0 14px}.people-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.person{padding:12px 11px 11px}.avatar{width:25px;height:25px;font-size:12px}.person-name{font-size:11px}.streak-badge{font-size:9px}.person-line{gap:6px}.person-data{font-size:9px}.person-data .reached{font-size:8px}.community-grid{grid-template-columns:1fr;gap:30px;margin-top:30px;padding-top:25px}.community-grid .section-heading h2{font-size:26px}.community-grid .eyebrow{font-size:7px;letter-spacing:1.2px}.activity-row{padding:11px 0}.activity-time{font-size:9px}.activity-time time{font-size:12px}.activity-row strong{font-size:12px}.tabs{margin-top:17px}.tabs button{padding:10px;font-size:12px}.leader-row{padding:13px 0;font-size:12px}.leader-name{font-size:12px}.leader-value{font-size:12px}.micro-copy{font-size:9px}.leaderboard-section{border-top:1px solid var(--line);padding-top:25px}.section-doodle{width:22px;height:22px}.hint{line-height:1.6}#dialog-body{padding:26px 22px}dialog h2{font-size:32px}}
-@media(max-width:365px){.hero-art{right:-34px}.hero h1{font-size:36px}.hero-copy{max-width:83%}.page-counter>strong{font-size:43px}.page-counter>span{font-size:18px}.time-digits{gap:2px}.time-digits b{font-size:15px}.countdown-card{gap:0 9px;grid-template-columns:94px 1fr}.person .avatar{display:none}.section-heading h2{font-size:23px}.mission{padding:20px 16px 17px}.rules{padding-left:2px}.edition{max-width:95px}.mission-eyebrow{font-size:6px}.day-chip{font-size:8px}}
-.confirm-dialog{width:min(360px,calc(100% - 40px))}.confirm-body{padding:28px 24px 22px;text-align:center}.confirm-body h2{font-size:27px;margin:0 0 6px;padding:0}.confirm-body p{margin:0 0 22px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}.confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.is-live .site-header,.is-live .hero,.is-live .rules{display:none}.is-live main{padding-top:28px}.is-live .readers-section{margin-top:34px}
-@media(max-width:580px){.is-live main{padding-top:16px}.is-live .readers-section{margin-top:26px}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
-</style>
-
-</head><body>
-<a class="skip-link" href="#main">Aller au contenu</a>
-<svg aria-hidden="true" class="icon-sprite" xmlns="http://www.w3.org/2000/svg">
-<symbol id="i-book" viewbox="0 0 24 24"><path d="M3 4.5c4-1 6-.3 9 2 3-2.3 5-3 9-2v15c-4-1-6-.3-9 2-3-2.3-5-3-9-2z"></path><path d="M12 6.5v15"></path></symbol>
-<symbol id="i-arrow" viewbox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"></path></symbol>
-<symbol id="i-plus" viewbox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></symbol>
-<symbol id="i-check" viewbox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></symbol>
-<symbol id="i-users" viewbox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m3 9v-2a5 5 0 0 0-3-4"></path></symbol>
-<symbol id="i-search" viewbox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m16 16 4 4"></path></symbol>
-<symbol id="i-clock" viewbox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></symbol>
-<symbol id="i-close" viewbox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"></path></symbol>
-<symbol id="i-lock" viewbox="0 0 24 24"><rect height="11" rx="3" width="14" x="5" y="10"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"></path></symbol>
-<symbol id="i-spark" viewbox="0 0 24 24"><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z"></path></symbol>
-<symbol id="i-medal" viewbox="0 0 24 24"><circle cx="12" cy="9" r="6"></circle><path d="m8 14-2 8 6-3 6 3-2-8"></path><path d="m10 9 1.5 1.5L14 8"></path></symbol>
-<symbol id="i-calendar" viewbox="0 0 24 24"><rect height="16" rx="3" width="18" x="3" y="5"></rect><path d="M7 3v4m10-4v4M3 11h18"></path></symbol>
-<symbol id="i-history" viewbox="0 0 24 24"><path d="M3 11a9 9 0 1 1 3 8M3 4v7h7m2-4v5l3 2"></path></symbol>
-<symbol id="i-leaf" viewbox="0 0 24 24"><path d="M20 3c-2 2-7 0-11 3-7 6 1 15 7 9 3-3 2-8 4-12zM4 21 15 10"></path></symbol>
-<symbol id="i-phone" viewbox="0 0 24 24"><rect height="20" rx="3" width="12" x="6" y="2"></rect><path d="M11 18h2"></path></symbol>
-<symbol id="i-share" viewbox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M5 13v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"></path></symbol>
-</svg>
-<header class="wrap site-header"><a href="#" class="brand" aria-label="Le défi lecture, accueil"><span class="brand-icon"><svg class="icon"><use href="#i-book"/></svg></span><span>le défi <strong>lecture.</strong></span></a><span class="edition"><svg class="icon"><use href="#i-calendar"/></svg>27 sept. — 25 déc. 2026</span></header>
-<main id="main" class="wrap">
-<div id="connection" class="connection" role="status" hidden></div>
-<section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><h1 id="hero-title">Et si je me mets à <em>lire ?</em><svg class="icon title-spark" aria-hidden="true"><use href="#i-spark"/></svg></h1><p class="hero-sub">90 jours pour prendre goût à la lecture.</p></div><div class="hero-art"><div aria-hidden="true" class="book-scene">
-<div class="scene-arch"></div>
-<div class="scene-orbit"></div>
-<span class="scene-spark spark-one">✳</span><span class="scene-spark spark-two">✧</span><span class="scene-spark spark-three">✧</span>
-<div class="round-stamp"><span>UN LIVRE.</span><strong>90</strong><span>JOURS POUR LIRE.</span></div>
-<div class="book book-back"><span class="book-spine"></span><div class="book-cover"><span class="book-small">UN NOUVEAU</span><span class="book-name">chapitre</span><span class="book-drawing">✳</span><span class="book-small">COMMENCE ICI</span></div><div class="book-pages"></div></div>
-<div class="book book-front"><span class="book-spine"></span><div class="book-cover"><span class="book-small">PRENDRE LE TEMPS DE</span><span class="book-name">grandir<br/><i>ensemble.</i></span><div class="cover-flower"><i></i><i></i><i></i><i></i><i></i><i></i><b></b></div><span class="book-small">UNE PAGE À LA FOIS</span></div><div class="book-pages"></div></div>
-<div class="scene-caption">Un peu chaque jour,<br/><em>beaucoup ensemble.</em></div>
-</div></div></section>
-<section class="mission" aria-labelledby="mission-title">
-<div class="mission-main"><div class="mission-top"><span class="eyebrow mission-eyebrow"><span class="status-dot"></span><span id="challenge-status">LE CHALLENGE COLLECTIF</span></span><span id="day-chip" class="day-chip">90 jours</span></div><div class="mission-heading"><h2 id="mission-title">Notre objectif, ensemble.</h2><span class="percent-pill" id="global-percent">— %</span></div><div id="launch-note" class="launch-note" hidden><p class="launch-text">Objectif commun : 3 000 pages en 90 jours.</p><button class="button button-primary" data-action="join"><svg class="icon"><use href="#i-plus"/></svg>Je participe</button></div><div id="live-counter"><div class="page-counter"><strong id="global-total">—</strong><span>/ 3 000 <small>pages lues</small></span><svg class="icon counter-spark" aria-hidden="true"><use href="#i-spark"/></svg></div><div class="segmented-progress" id="global-progress" role="progressbar" aria-label="Pages lues par toute l’église" aria-valuemin="0" aria-valuemax="3000" aria-valuenow="0"></div></div><div class="mission-bottom"><span id="pages-remaining">Chaque page compte.</span><span class="readers-stat"><svg class="icon"><use href="#i-users"/></svg><span id="reader-stat">— lecteurs</span></span></div></div>
-<aside class="countdown-card" aria-label="Temps restant"><span class="eyebrow" id="countdown-eyebrow">LE GRAND DÉPART</span><strong id="countdown-value">—</strong><div class="time-digits" aria-label="Compte à rebours précis"><span><b id="time-days">—</b><small>jours</small></span><i>:</i><span><b id="time-hours">—</b><small>heures</small></span><i>:</i><span><b id="time-minutes">—</b><small>min</small></span><i>:</i><span><b id="time-seconds">—</b><small>sec</small></span></div></aside>
-</section>
-<section class="rules" aria-label="Les règles en trois étapes"><article><span class="rule-icon"><svg class="icon"><use href="#i-medal"/></svg></span><div><h3><small>01</small> Choisis ton cap</h3><p>100, 300 ou 500 pages.</p></div></article><article><span class="rule-icon peach"><svg class="icon"><use href="#i-book"/></svg></span><div><h3><small>02</small> Ouvre un livre</h3><p>La bibliothèque de l’église t’attend.</p></div></article><article><span class="rule-icon sage"><svg class="icon"><use href="#i-leaf"/></svg></span><div><h3><small>03</small> Ajoute tes pages</h3><p>Elles comptent pour toi et pour nous.</p></div></article></section>
-<section id="lecteurs" class="readers-section" aria-labelledby="readers-title"><div class="section-heading"><div><h2 id="readers-title">Les lecteurs <span id="readers-count" class="count-pill">0</span></h2></div><button class="button button-primary" data-action="join" id="join-button"><svg class="icon"><use href="#i-plus"/></svg>Je participe</button></div><div class="reader-toolbar"><label class="search"><svg class="icon"><use href="#i-search"/></svg><input type="search" id="search" autocomplete="off" aria-label="Cherche ton prénom" placeholder="Cherche ton prénom…"></label><p>Puis clique sur ta carte pour ajouter tes pages.</p></div><div class="people-grid" id="people-grid"><p class="empty-state">On ouvre le carnet des lecteurs…</p></div></section>
-<div class="community-grid"><section class="activity-section" aria-labelledby="activity-title"><div class="section-heading"><div><h2 id="activity-title">Derniers ajouts</h2></div><svg class="icon section-doodle" aria-hidden="true"><use href="#i-book"/></svg></div><div id="activity-list" class="activity-list"></div></section>
-<section class="leaderboard-section" aria-labelledby="leaderboard-title"><div class="section-heading"><div><h2 id="leaderboard-title">Classement</h2></div><svg class="icon section-doodle star-doodle" aria-hidden="true"><use href="#i-spark"/></svg></div><div class="tabs" role="tablist" aria-label="Type de classement"><button id="tab-pages" role="tab" aria-controls="leaders" aria-selected="true" data-tab="pages"><svg class="icon"><use href="#i-book"/></svg>Pages</button><button id="tab-streak" role="tab" aria-controls="leaders" aria-selected="false" tabindex="-1" data-tab="streak">🔥 Séries</button><button id="tab-goal" role="tab" aria-controls="leaders" aria-selected="false" tabindex="-1" data-tab="goal"><svg class="icon"><use href="#i-medal"/></svg>Objectif</button></div><div id="leaders" role="tabpanel" aria-labelledby="tab-pages"></div><p id="leader-caption" class="micro-copy" hidden></p></section></div>
-<div class="install" id="install" hidden><button class="button install-button" data-action="install"><svg class="icon"><use href="#i-phone"/></svg>Ajouter à mon écran d’accueil</button></div>
-<footer><span>Un peu chaque jour, <em>beaucoup ensemble.</em></span><span aria-hidden="true">✳</span></footer>
-</main>
-<dialog id="dialog" aria-labelledby="dialog-title"><button class="dialog-close" data-action="close" aria-label="Fermer"><svg class="icon"><use href="#i-close"/></svg></button><div id="dialog-body"></div></dialog>
-<dialog id="confirm" class="confirm-dialog" aria-labelledby="confirm-title"><form method="dialog" class="confirm-body"><h2 id="confirm-title">Annuler cet ajout ?</h2><p id="confirm-text"></p><div class="confirm-actions"><button class="button button-outline" value="no">Non, garder</button><button class="button button-primary" value="yes">Oui, annuler</button></div></form></dialog>
-<div id="toast" role="status" aria-live="polite" hidden></div>
-<noscript><p class="connection">Active JavaScript pour afficher le challenge et ajouter tes pages.</p></noscript>
-<script type="module">
-import {CONFIG,parisDate,shiftDay,challengeState,streakFor,ranked,normalizedName,validatePages} from './domain.js';
-
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const fmt=n=>new Intl.NumberFormat('fr-FR').format(n);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const icon=id=>`<svg class="icon" aria-hidden="true"><use href="#i-${id}"/></svg>`;
-const uid=()=>globalThis.crypto?.randomUUID?.()||'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16)});
-const SELECT_KEY='lecture-selected-v3';
-const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{/* private mode: selection is not remembered */}}};
-let state=null,tab='pages',selected=store.get(SELECT_KEY),clockBase=Date.now(),clockWall=Date.now(),activeProfile=null,profileRequest=0,refreshing=false,toastTimer,phase=null;
-function clock(){return new Date(clockBase+Date.now()-clockWall)}
-async function api(path,method='GET',body){
-  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
-  try{
-    const r=await fetch(path,{method,cache:'no-store',signal:controller.signal,headers:body?{'Content-Type':'application/json','X-Challenge-Request':'1'}:undefined,body:body?JSON.stringify(body):undefined});
-    const d=await r.json().catch(()=>({error:'Le service ne répond pas correctement.'}));
-    if(!r.ok)throw Error(d.error||'Impossible d’enregistrer cette action.');return d;
-  }catch(e){if(e.name==='AbortError')throw Error('La connexion est trop lente. Réessaie : le même envoi ne sera pas compté deux fois.');throw e}
-  finally{clearTimeout(timeout)}
-}
-function initials(p){return esc([...p.name][0]?.toUpperCase()||'?')}
-function tone(p){const n=[...p.name].reduce((s,c)=>s+c.codePointAt(0),0);return ['','peach','gray','sand'][n%4]}
-function avatar(p){return `<span class="avatar ${tone(p)}" aria-hidden="true">${initials(p)}</span>`}
-function dynamic(p){return {...p,...streakFor(p.times.map(createdAt=>({createdAt,readDate:parisDate(createdAt),pages:1})),clock())}}
-function streakBadge(p){p=dynamic(p);return p.streak>=2?`<span class="streak-badge" title="${p.streak} jours d’affilée" aria-label="Série de ${p.streak} jours${p.atRisk?', bientôt perdue':''}">${p.streak}🔥${p.atRisk?'<span class="hourglass" aria-hidden="true">⏳</span>':''}</span>`:''}
-function dateLabel(iso){const d=parisDate(iso),today=parisDate(clock());return d===today?'Aujourd’hui':d===shiftDay(today,-1)?'Hier':new Intl.DateTimeFormat('fr-FR',{timeZone:CONFIG.timeZone,day:'numeric',month:'short'}).format(new Date(iso))}
-function timeLabel(iso){return new Intl.DateTimeFormat('fr-FR',{timeZone:CONFIG.timeZone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(iso))}
-function fullDate(iso){return new Intl.DateTimeFormat('fr-FR',{timeZone:CONFIG.timeZone,year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(iso))+' (Paris)'}
-// Before the start the mission card announces Sunday; the page counter only appears once the challenge runs.
-function renderPhase(c){
-  if(c.status===phase)return;phase=c.status;const scheduled=phase==='scheduled';
-  $('#mission-title').textContent=scheduled?'Départ dimanche 27 septembre.':'Notre objectif, ensemble.';
-  $('.mission').classList.toggle('is-scheduled',scheduled);$('#day-chip').hidden=scheduled;
-  // From Sunday on, the counter and the readers come first: no header, intro or rules.
-  document.documentElement.classList.toggle('is-live',!scheduled);
-  $('#launch-note').hidden=!scheduled;$('#live-counter').hidden=scheduled;$('#global-percent').hidden=scheduled;
-}
-function renderClock(){
-  if(!state)return;const c=challengeState(clock()),started=c.status==='running',scheduled=c.status==='scheduled';
-  if(c.status!==phase){renderPhase(c);render();return}
-  $('#challenge-status').textContent=scheduled?'INSCRIPTIONS OUVERTES':started?'EN COURS':'TERMINÉ';
-  $('#day-chip').textContent=`Jour ${c.dayNumber} / 90`;
-  $('#countdown-eyebrow').textContent=scheduled?'LE GRAND DÉPART':started?'IL RESTE ENCORE':'LE DÉFI EST TERMINÉ';
-  $('#countdown-value').textContent=scheduled?`J-${c.daysUntilStart}`:started?`J-${c.daysLeft}`:'Bravo !';
-  const seconds=Math.max(0,Math.floor((c.deadline-clock().getTime())/1000)),values=[Math.floor(seconds/86400),Math.floor(seconds%86400/3600),Math.floor(seconds%3600/60),seconds%60];
-  ['days','hours','minutes','seconds'].forEach((part,i)=>$('#time-'+part).textContent=String(values[i]).padStart(2,'0'));
-}
-function render(){
-  const pct=state.totalPages/CONFIG.collectiveGoal*100,scheduled=phase==='scheduled';
-  $('#global-total').textContent=fmt(state.totalPages);$('#global-percent').textContent=Math.round(pct)+' %';
-  $('#readers-count').textContent=state.readerCount;$('#reader-stat').textContent=`${state.readerCount} ${scheduled?`inscrit${state.readerCount===1?'':'s'}`:`lecteur${state.readerCount===1?'':'s'}`}`;
-  $('#pages-remaining').textContent=scheduled?'':pct>=100?'Objectif atteint !':`Encore ${fmt(Math.max(0,3000-state.totalPages))} pages.`;
-  const bar=$('#global-progress');bar.setAttribute('aria-valuenow',Math.min(3000,state.totalPages));bar.setAttribute('aria-valuetext',`${fmt(state.totalPages)} pages sur 3 000, ${Math.round(pct)} pour cent`);
-  if(!bar.children.length)bar.innerHTML=Array.from({length:30},(_,i)=>`<span class="segment" aria-hidden="true" title="${i*100} à ${(i+1)*100} pages"><i></i></span>`).join('');
-  [...bar.children].forEach((s,i)=>s.firstElementChild.style.width=Math.min(100,Math.max(0,state.totalPages-i*100))+'%');
-  $$('[data-action=join]').forEach(b=>b.disabled=state.challenge.status==='finished');
-  renderClock();renderPeople();renderActivity();renderLeaders();
-}
-function renderPeople(){
-  if(!state)return;$('.reader-toolbar').hidden=!state.participants.length;const q=$('#search').value.trim().normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
-  const ps=state.participants.filter(p=>p.name.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().includes(q));
-  $('#people-grid').innerHTML=ps.length?ps.map(p=>`<button class="person ${p.id===selected?'selected':''}" data-person="${esc(p.id)}" aria-label="${esc(p.name)}, ${p.pages} pages sur ${p.goal}. Ouvrir son espace"><div class="person-line">${avatar(p)}<div class="person-title"><div class="person-name">${esc(p.name)}</div>${p.id===selected?'<div class="person-you">moi</div>':''}</div>${streakBadge(p)}</div><div class="person-data"><span><strong>${fmt(p.pages)}</strong> / ${p.goal} p.</span>${p.pages>=p.goal?`<span class="reached">${icon('check')} atteint</span>`:`<span>${Math.round(p.pages/p.goal*100)} %</span>`}</div><div class="mini"><i style="width:${Math.min(100,p.pages/p.goal*100)}%"></i></div></button>`).join(''):`<p class="empty-state">${q?'Aucun prénom trouvé.':'Aucun inscrit pour l’instant.'}</p>`;
-}
-function renderActivity(){
-  $('#activity-list').innerHTML=state.recentActivity.length?state.recentActivity.slice(0,7).map(e=>`<button class="activity-row" data-person="${esc(e.participantId)}" aria-label="Voir les lectures de ${esc(e.name)}">${avatar(e)}<div><strong>${esc(e.name)}</strong><div class="activity-detail">a ajouté <b>+${fmt(e.pages)} pages</b></div></div><span class="activity-time" title="${esc(fullDate(e.createdAt))}">${dateLabel(e.createdAt)}<time datetime="${esc(e.createdAt)}">${timeLabel(e.createdAt)}</time></span></button>`).join(''):`<p class="empty-state">${phase==='scheduled'?'Premiers ajouts dimanche.':'Aucun ajout pour l’instant.'}</p>`;
-}
-function renderLeaders(){
-  if(!state)return;const ps=ranked(state.participants.map(dynamic),tab);
-  $('#leaders').setAttribute('aria-labelledby','tab-'+tab);
-  $('#leaders').innerHTML=ps.length?ps.map(p=>`<button class="leader-row" data-person="${esc(p.id)}"><span class="rank">${String(p.rank).padStart(2,'0')}</span>${avatar(p)}<span class="leader-name">${esc(p.name)}</span><span class="leader-value">${tab==='pages'?fmt(p.pages)+' p.':tab==='streak'?`${p.streak}🔥${p.atRisk?'⏳':''}`:Math.round(p.pages/p.goal*100)+' %'}</span></button>`).join(''):`<p class="empty-state">${tab==='streak'?'Aucune série pour l’instant.':'Aucune lecture pour l’instant.'}</p>`;
-  const caption=tab==='goal'?'En % de l’objectif de chacun.':'';$('#leader-caption').textContent=caption;$('#leader-caption').hidden=!caption;
-}
-function showDialog(html){$('#dialog-body').innerHTML=html;if(!$('#dialog').open)$('#dialog').showModal()}
-function showJoin(){activeProfile=null;profileRequest++;showDialog(`<h2 id="dialog-title">Je me lance.</h2><form id="join-form"><label class="field-label" for="join-name">Ton prénom</label><input id="join-name" class="field" name="name" autocomplete="given-name" required maxlength="32" placeholder="Ex. Camille"><label class="field-label">Ton objectif sur 90 jours</label><div class="goals" role="group" aria-label="Choisir mon objectif">${[[100,'🥉'],[300,'🥈'],[500,'🥇']].map(([n,e])=>`<label class="goal"><input type="radio" name="goal" value="${n}" required aria-label="${n} pages"><span>${e}<b>${n}</b><small>pages</small></span></label>`).join('')}</div><p class="hint">Ton prénom et tes pages seront visibles par tous.</p><div class="form-error" role="alert" hidden></div><button class="button button-green full" type="submit">C’est parti ${icon('arrow')}</button></form>`)}
-function weekHTML(p){
-  const today=parisDate(clock()),ref=today<CONFIG.startDate?CONFIG.startDate:today>CONFIG.endDate?CONFIG.endDate:today,sunday=shiftDay(ref,-new Date(ref+'T12:00:00Z').getUTCDay());
-  const day=(d,o)=>new Intl.DateTimeFormat('fr-FR',{timeZone:'UTC',...o}).format(new Date(d+'T12:00:00Z'));
-  return `<div class="week" aria-label="Semaine du ${day(sunday,{day:'numeric',month:'long'})}, de dimanche à samedi">${Array.from({length:7},(_,i)=>shiftDay(sunday,i)).map(d=>{const read=p.dates.includes(d),off=d>today||d<CONFIG.startDate||d>CONFIG.endDate;return `<span class="week-day ${read?'read':''} ${d===today?'today':''} ${off?'off':''}" title="${day(d,{weekday:'long',day:'numeric',month:'long'})} : ${read?'lecture enregistrée':d>today&&d<=CONFIG.endDate?'à venir':off?'hors défi':'pas de lecture'}">${day(d,{weekday:'short'}).slice(0,2)}<i aria-hidden="true">${read?'✓':off?'':'·'}</i></span>`}).join('')}</div>`}
-function calendarHTML(p){
-  const today=parisDate(clock()),read=new Set(p.dates),months=[],dow=d=>new Date(d+'T12:00:00Z').getUTCDay();
-  const fmtUTC=(d,o)=>new Intl.DateTimeFormat('fr-FR',{timeZone:'UTC',...o}).format(new Date(d+'T12:00:00Z'));
-  for(let d=CONFIG.startDate;d<=CONFIG.endDate;d=shiftDay(d,1)){if(months.at(-1)?.key!==d.slice(0,7))months.push({key:d.slice(0,7),days:[]});months.at(-1).days.push(d)}
-  return `<div class="calendar">${months.map(({key,days})=>{let cells='';
-    for(let d=shiftDay(days[0],-dow(days[0]));d<=shiftDay(days.at(-1),6-dow(days.at(-1)));d=shiftDay(d,1)){
-      if(d.slice(0,7)!==key){cells+='<span></span>';continue}
-      const isRead=read.has(d),off=d<CONFIG.startDate||d>CONFIG.endDate||d>today;
-      cells+=`<span class="cal-day ${isRead?'read':off?'off':''} ${d===today?'today':''}" title="${fmtUTC(d,{weekday:'long',day:'numeric',month:'long'})} : ${isRead?'lu':off?'à venir':'pas lu'}">${Number(d.slice(8))}</span>`}
-    const name=fmtUTC(days[0],{month:'long'});
-    return `<div class="cal-month"><b>${name[0].toUpperCase()+name.slice(1)}</b><div class="cal-grid">${['di','lu','ma','me','je','ve','sa'].map(x=>`<i>${x}</i>`).join('')}${cells}</div></div>`}).join('')}</div>`}
-function historyHTML(p,limit=7){return p.entries.slice(0,limit).map(e=>`<div class="history-row"><div><strong>+${fmt(e.pages)} pages</strong><small><time datetime="${esc(e.createdAt)}" title="${esc(fullDate(e.createdAt))}">${dateLabel(e.createdAt)} · ${timeLabel(e.createdAt)}</time></small></div>${state.challenge.status==='running'?`<button type="button" data-delete="${esc(e.id)}" data-owner="${esc(p.id)}" aria-label="Annuler l’ajout de ${e.pages} pages">Annuler</button>`:''}</div>`).join('')||'<p class="hint">Rien pour l’instant.</p>'}
-function renderProfile(p){
-  p=dynamic(p);const c=challengeState(clock()),remaining=Math.max(0,p.goal-p.pages);
-  activeProfile=p;
-  showDialog(`<h2 id="dialog-title">${esc(p.name)}${p.pages>=p.goal?' ✧':''}${streakBadge(p)}</h2><div class="profile-total">${fmt(p.pages)} <small>/ ${p.goal} pages</small></div><div class="mini profile-progress" role="progressbar" aria-label="Progression de ${esc(p.name)}" aria-valuemin="0" aria-valuemax="${p.goal}" aria-valuenow="${Math.min(p.goal,p.pages)}"><i style="width:${Math.min(100,p.pages/p.goal*100)}%"></i></div><div class="profile-caption"><span>${remaining?`Encore ${remaining} pages.`:'Objectif atteint !'}</span><span>${Math.round(p.pages/p.goal*100)} %</span></div><div class="profile-streak"><strong>Cette semaine</strong>${weekHTML(p)}<button type="button" class="cal-toggle" data-action="calendar" aria-expanded="false" aria-controls="profile-calendar">Voir les 90 jours</button><div id="profile-calendar" hidden>${calendarHTML(p)}</div></div>${c.status==='running'?`<form id="pages-form" data-id="${esc(p.id)}" data-request="${uid()}"><label class="field-label" for="pages-input">Nouvelles pages lues (pas ton total)</label><div class="quick"><input class="field" id="pages-input" name="pages" type="number" inputmode="numeric" min="1" max="10000" step="1" required placeholder="Ex. 12"><button class="button button-green" type="submit">Ajouter</button></div><div class="form-error" role="alert" hidden></div></form>`:`<p class="profile-info">${c.status==='scheduled'?'Ajout des pages à partir de dimanche.':'Le défi est terminé. Merci !'}</p>`}<div class="history"><h3>Historique</h3><div id="profile-history">${historyHTML(p)}</div>${p.entries.length>7?`<button class="more-history" data-action="more-history">Tout voir (${p.entries.length})</button>`:''}</div>`);
-}
-async function openProfile(id){const n=++profileRequest;const {participant}=await api('/api/profile?id='+encodeURIComponent(id));if(n!==profileRequest)return;selected=id;store.set(SELECT_KEY,id);renderPeople();renderProfile(participant)}
-function toast(message){clearTimeout(toastTimer);const t=$('#toast');t.textContent=message;t.hidden=false;toastTimer=setTimeout(()=>t.hidden=true,3800)}
-function connection(message){const e=$('#connection');e.hidden=!message;e.textContent=message||'';if(message){const b=document.createElement('button');b.type='button';b.textContent='Réessayer';b.dataset.action='retry';e.append(b)}}
-async function refresh({quiet=false}={}){
-  if(refreshing)return;refreshing=true;
-  try{state=await api('/api/state');clockBase=Date.parse(state.challenge.serverTime);clockWall=Date.now();renderPhase(challengeState(clock()));render();connection('');}
-  catch(e){if(!quiet||!state)connection(e.message||'Connexion interrompue.');else connection('Connexion interrompue. Les dernières données reçues restent affichées.');if(!state)$('#people-grid').innerHTML='<p class="empty-state">Le carnet sera disponible après la connexion au service partagé.</p>';throw e}
-  finally{refreshing=false}
-}
-function chooseTab(button){tab=button.dataset.tab;$$('[data-tab]').forEach(b=>{b.setAttribute('aria-selected',b===button?'true':'false');b.tabIndex=b===button?0:-1});renderLeaders()}
-document.addEventListener('click',async event=>{
-  try{
-    const a=event.target.closest('[data-action]');
-    if(a?.dataset.action==='join')showJoin();
-    if(a?.dataset.action==='close'){$('#dialog').close();profileRequest++}
-    if(a?.dataset.action==='retry')await refresh();
-    if(a?.dataset.action==='install')await install();
-    if(a?.dataset.action==='calendar'){const cal=$('#profile-calendar');cal.hidden=!cal.hidden;a.setAttribute('aria-expanded',String(!cal.hidden));a.textContent=cal.hidden?'Voir les 90 jours':'Masquer les 90 jours'}
-    if(a?.dataset.action==='more-history'&&activeProfile){$('#profile-history').innerHTML=historyHTML(activeProfile,activeProfile.entries.length);a.remove()}
-    const p=event.target.closest('[data-person]');if(p)await openProfile(p.dataset.person);
-    const t=event.target.closest('[data-tab]');if(t)chooseTab(t);
-    const d=event.target.closest('[data-delete]');
-    if(d&&!d.disabled&&await askCancel(activeProfile?.entries.find(e=>e.id===d.dataset.delete))){
-      d.disabled=true;await api('/api/entries','DELETE',{entryId:d.dataset.delete,participantId:d.dataset.owner});await refresh();await openProfile(d.dataset.owner);toast('Ajout annulé.');
-    }
-  }catch(e){toast(e.message);const b=event.target.closest('button');if(b)b.disabled=false;}
-});
-$('#search').addEventListener('input',renderPeople);
-$('.tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const tabs=$$('[data-tab]'),index=tabs.findIndex(b=>b.getAttribute('aria-selected')==='true');const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(index+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;chooseTab(tabs[next]);tabs[next].focus()});
-$('#dialog').addEventListener('click',e=>{if(e.target===$('#dialog')){const r=$('#dialog').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom){$('#dialog').close();profileRequest++}}});
-$('#dialog').addEventListener('cancel',()=>profileRequest++);
-// Cancel confirmation shown on top of the profile; resolves true only on "Oui, annuler" (Esc or outside tap = keep).
-function askCancel(entry){
-  const box=$('#confirm');if(!entry)return Promise.resolve(false);
-  const day=dateLabel(entry.createdAt);
-  $('#confirm-text').textContent=`+${fmt(entry.pages)} pages, ${day==='Aujourd’hui'?'aujourd’hui':day==='Hier'?'hier':'le '+day} à ${timeLabel(entry.createdAt)}`;
-  box.returnValue='';box.showModal();box.querySelector('[value=no]').focus();
-  return new Promise(resolve=>box.addEventListener('close',()=>resolve(box.returnValue==='yes'),{once:true}));
-}
-$('#confirm').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
-document.addEventListener('submit',async e=>{
-  const form=e.target;if(!['join-form','pages-form'].includes(form.id))return;e.preventDefault();if(form.dataset.busy==='1')return;
-  const data=Object.fromEntries(new FormData(form)),button=form.querySelector('button[type=submit]'),error=form.querySelector('.form-error');error.hidden=true;button.disabled=true;form.dataset.busy='1';
-  try{
-    if(form.id==='join-form'){
-      const name=normalizedName(data.name).name,goal=Number(data.goal);if(!CONFIG.personalGoals.includes(goal))throw Error('Choisis ton objectif.');
-      const r=await api('/api/participants','POST',{name,goal});selected=r.participant.id;store.set(SELECT_KEY,selected);await refresh();await openProfile(selected);toast('Bienvenue dans le défi !');
-    }else{
-      const id=form.dataset.id,pages=validatePages(Number(data.pages));await api('/api/entries','POST',{participantId:id,pages,requestId:form.dataset.request});
-      // A succeeded write must never be resubmitted after a failed refresh.
-      form.reset();form.dataset.request=uid();
-      await refresh();await openProfile(id);toast(`+${fmt(pages)} pages !`);
-    }
-  }catch(err){error.textContent=err.message||'Une erreur est survenue.';error.hidden=false;button.disabled=false;form.dataset.busy='0'}
-});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh({quiet:true}).catch(()=>{})});
-setInterval(()=>{if(!document.hidden)renderClock()},1000);
-setInterval(()=>{if(!document.hidden)refresh({quiet:true}).catch(()=>{})},20000);
-renderPhase(challengeState());
-// Home-screen install: Chrome (Android, computer) shows its own prompt; iPhone and other browsers get the steps.
-let installPrompt=null;
-const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),isAndroid=/Android/.test(navigator.userAgent);
-function showInstall(){$('#install').hidden=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true||!(installPrompt||isIOS||isAndroid)}
-async function install(){
-  if(installPrompt){const prompt=installPrompt;installPrompt=null;prompt.prompt();if((await prompt.userChoice).outcome==='accepted')$('#install').hidden=true;return}
-  activeProfile=null;profileRequest++;
-  showDialog(`<h2 id="dialog-title">Sur ton écran d’accueil</h2><ol class="install-steps">${isIOS?`<li>Touche le bouton Partager ${icon('share')}</li><li>Choisis « Sur l’écran d’accueil »</li><li>Touche « Ajouter »</li>`:'<li>Ouvre le menu ⋮ du navigateur</li><li>Choisis « Ajouter à l’écran d’accueil » ou « Installer l’application »</li>'}</ol><p class="hint">Ouvert depuis WhatsApp ou Instagram ? Ouvre d’abord le lien dans ${isIOS?'Safari':'Chrome'}.</p>`);
-}
-addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;showInstall()});
-addEventListener('appinstalled',()=>{installPrompt=null;$('#install').hidden=true});
-showInstall();
-if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
-refresh().catch(()=>{});
-</script></body></html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#234f42" />
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Défi lecture" />
+    <meta
+      name="description"
+      content="90 jours pour lire, du 27 septembre au 25 décembre 2026. 3 000 pages ensemble, chacun à son rythme."
+    />
+    <title>Le défi lecture · Ensemble, page après page</title>
+    <script>
+      // Once the challenge has started, skip the intro without a flash; app.js confirms with the server clock.
+      if (Date.now() >= Date.parse('2026-09-26T22:00:00Z')) document.documentElement.classList.add('is-live');
+    </script>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Aller au contenu</a>
+    <svg aria-hidden="true" class="icon-sprite" xmlns="http://www.w3.org/2000/svg">
+      <symbol id="i-book" viewbox="0 0 24 24">
+        <path d="M3 4.5c4-1 6-.3 9 2 3-2.3 5-3 9-2v15c-4-1-6-.3-9 2-3-2.3-5-3-9-2z"></path>
+        <path d="M12 6.5v15"></path>
+      </symbol>
+      <symbol id="i-arrow" viewbox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"></path></symbol>
+      <symbol id="i-plus" viewbox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></symbol>
+      <symbol id="i-check" viewbox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></symbol>
+      <symbol id="i-users" viewbox="0 0 24 24">
+        <circle cx="9" cy="8" r="3"></circle>
+        <path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m3 9v-2a5 5 0 0 0-3-4"></path>
+      </symbol>
+      <symbol id="i-search" viewbox="0 0 24 24">
+        <circle cx="10.5" cy="10.5" r="6.5"></circle>
+        <path d="m16 16 4 4"></path>
+      </symbol>
+      <symbol id="i-close" viewbox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"></path></symbol>
+      <symbol id="i-spark" viewbox="0 0 24 24">
+        <path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z"></path>
+      </symbol>
+      <symbol id="i-medal" viewbox="0 0 24 24">
+        <circle cx="12" cy="9" r="6"></circle>
+        <path d="m8 14-2 8 6-3 6 3-2-8"></path>
+        <path d="m10 9 1.5 1.5L14 8"></path>
+      </symbol>
+      <symbol id="i-calendar" viewbox="0 0 24 24">
+        <rect height="16" rx="3" width="18" x="3" y="5"></rect>
+        <path d="M7 3v4m10-4v4M3 11h18"></path>
+      </symbol>
+      <symbol id="i-leaf" viewbox="0 0 24 24">
+        <path d="M20 3c-2 2-7 0-11 3-7 6 1 15 7 9 3-3 2-8 4-12zM4 21 15 10"></path>
+      </symbol>
+      <symbol id="i-phone" viewbox="0 0 24 24">
+        <rect height="20" rx="3" width="12" x="6" y="2"></rect>
+        <path d="M11 18h2"></path>
+      </symbol>
+      <symbol id="i-share" viewbox="0 0 24 24">
+        <path d="M12 16V3m-5 5 5-5 5 5M5 13v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"></path>
+      </symbol>
+    </svg>
+    <header class="wrap site-header">
+      <a href="#" class="brand" aria-label="Le défi lecture, accueil"
+        ><span class="brand-icon"
+          ><svg class="icon"><use href="#i-book" /></svg></span
+        ><span>le défi <strong>lecture.</strong></span></a
+      ><span class="edition"
+        ><svg class="icon"><use href="#i-calendar" /></svg>27 sept. — 25 déc. 2026</span
+      >
+    </header>
+    <main id="main" class="wrap">
+      <div id="connection" class="connection" role="status" hidden></div>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 id="hero-title">
+            Et si je me mets à <em>lire ?</em
+            ><svg class="icon title-spark" aria-hidden="true"><use href="#i-spark" /></svg>
+          </h1>
+          <p class="hero-sub">90 jours pour prendre goût à la lecture.</p>
+        </div>
+        <div class="hero-art">
+          <div aria-hidden="true" class="book-scene">
+            <div class="scene-arch"></div>
+            <div class="scene-orbit"></div>
+            <span class="scene-spark spark-one">✳</span><span class="scene-spark spark-two">✧</span
+            ><span class="scene-spark spark-three">✧</span>
+            <div class="round-stamp"><span>UN LIVRE.</span><strong>90</strong><span>JOURS POUR LIRE.</span></div>
+            <div class="book book-back">
+              <span class="book-spine"></span>
+              <div class="book-cover">
+                <span class="book-small">UN NOUVEAU</span><span class="book-name">chapitre</span
+                ><span class="book-drawing">✳</span><span class="book-small">COMMENCE ICI</span>
+              </div>
+              <div class="book-pages"></div>
+            </div>
+            <div class="book book-front">
+              <span class="book-spine"></span>
+              <div class="book-cover">
+                <span class="book-small">PRENDRE LE TEMPS DE</span
+                ><span class="book-name">grandir<br /><i>ensemble.</i></span>
+                <div class="cover-flower"><i></i><i></i><i></i><i></i><i></i><i></i><b></b></div>
+                <span class="book-small">UNE PAGE À LA FOIS</span>
+              </div>
+              <div class="book-pages"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="mission" aria-labelledby="mission-title">
+        <div class="mission-main">
+          <div class="mission-top">
+            <span class="eyebrow mission-eyebrow"
+              ><span class="status-dot"></span><span id="challenge-status">LE CHALLENGE COLLECTIF</span></span
+            ><span id="day-chip" class="day-chip">90 jours</span>
+          </div>
+          <div class="mission-heading">
+            <h2 id="mission-title">Notre objectif, ensemble.</h2>
+            <span class="percent-pill" id="global-percent">— %</span>
+          </div>
+          <div id="launch-note" class="launch-note" hidden>
+            <p class="launch-text">Objectif commun : 3 000 pages en 90 jours.</p>
+            <button class="button button-primary" data-action="join">
+              <svg class="icon"><use href="#i-plus" /></svg>Je participe
+            </button>
+          </div>
+          <div id="live-counter">
+            <div class="page-counter">
+              <strong id="global-total">—</strong><span>/ 3 000 <small>pages lues</small></span
+              ><svg class="icon counter-spark" aria-hidden="true"><use href="#i-spark" /></svg>
+            </div>
+            <div
+              class="segmented-progress"
+              id="global-progress"
+              role="progressbar"
+              aria-label="Pages lues par toute l’église"
+              aria-valuemin="0"
+              aria-valuemax="3000"
+              aria-valuenow="0"
+            ></div>
+          </div>
+          <div class="mission-bottom">
+            <span id="pages-remaining">Chaque page compte.</span
+            ><span class="readers-stat"
+              ><svg class="icon"><use href="#i-users" /></svg><span id="reader-stat">— lecteurs</span></span
+            >
+          </div>
+        </div>
+        <aside class="countdown-card" aria-label="Temps restant">
+          <span class="eyebrow" id="countdown-eyebrow">LE GRAND DÉPART</span><strong id="countdown-value">—</strong>
+          <div class="time-digits" aria-label="Compte à rebours précis">
+            <span><b id="time-days">—</b><small>jours</small></span
+            ><i>:</i><span><b id="time-hours">—</b><small>heures</small></span
+            ><i>:</i><span><b id="time-minutes">—</b><small>min</small></span
+            ><i>:</i><span><b id="time-seconds">—</b><small>sec</small></span>
+          </div>
+        </aside>
+      </section>
+      <section class="rules" aria-label="Les règles en trois étapes">
+        <article>
+          <span class="rule-icon"
+            ><svg class="icon"><use href="#i-medal" /></svg
+          ></span>
+          <div>
+            <h3><small>01</small> Choisis ton cap</h3>
+            <p>100, 300 ou 500 pages.</p>
+          </div>
+        </article>
+        <article>
+          <span class="rule-icon peach"
+            ><svg class="icon"><use href="#i-book" /></svg
+          ></span>
+          <div>
+            <h3><small>02</small> Ouvre un livre</h3>
+            <p>La bibliothèque de l’église t’attend.</p>
+          </div>
+        </article>
+        <article>
+          <span class="rule-icon sage"
+            ><svg class="icon"><use href="#i-leaf" /></svg
+          ></span>
+          <div>
+            <h3><small>03</small> Ajoute tes pages</h3>
+            <p>Elles comptent pour toi et pour nous.</p>
+          </div>
+        </article>
+      </section>
+      <section id="lecteurs" class="readers-section" aria-labelledby="readers-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="readers-title">Les lecteurs <span id="readers-count" class="count-pill">0</span></h2>
+          </div>
+          <button class="button button-primary" data-action="join" id="join-button">
+            <svg class="icon"><use href="#i-plus" /></svg>Je participe
+          </button>
+        </div>
+        <div class="reader-toolbar">
+          <label class="search"
+            ><svg class="icon"><use href="#i-search" /></svg
+            ><input
+              type="search"
+              id="search"
+              autocomplete="off"
+              aria-label="Cherche ton prénom"
+              placeholder="Cherche ton prénom…"
+          /></label>
+          <p>Puis clique sur ta carte pour ajouter tes pages.</p>
+        </div>
+        <div class="people-grid" id="people-grid"><p class="empty-state">On ouvre le carnet des lecteurs…</p></div>
+      </section>
+      <div class="community-grid">
+        <section class="activity-section" aria-labelledby="activity-title">
+          <div class="section-heading">
+            <div><h2 id="activity-title">Derniers ajouts</h2></div>
+            <svg class="icon section-doodle" aria-hidden="true"><use href="#i-book" /></svg>
+          </div>
+          <div id="activity-list" class="activity-list"></div>
+        </section>
+        <section class="leaderboard-section" aria-labelledby="leaderboard-title">
+          <div class="section-heading">
+            <div><h2 id="leaderboard-title">Classement</h2></div>
+            <svg class="icon section-doodle star-doodle" aria-hidden="true"><use href="#i-spark" /></svg>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Type de classement">
+            <button id="tab-pages" role="tab" aria-controls="leaders" aria-selected="true" data-tab="pages">
+              <svg class="icon"><use href="#i-book" /></svg>Pages</button
+            ><button
+              id="tab-streak"
+              role="tab"
+              aria-controls="leaders"
+              aria-selected="false"
+              tabindex="-1"
+              data-tab="streak"
+            >
+              🔥 Séries</button
+            ><button
+              id="tab-goal"
+              role="tab"
+              aria-controls="leaders"
+              aria-selected="false"
+              tabindex="-1"
+              data-tab="goal"
+            >
+              <svg class="icon"><use href="#i-medal" /></svg>Objectif
+            </button>
+          </div>
+          <div id="leaders" role="tabpanel" aria-labelledby="tab-pages"></div>
+          <p id="leader-caption" class="micro-copy" hidden></p>
+        </section>
+      </div>
+      <div class="install" id="install" hidden>
+        <button class="button install-button" data-action="install">
+          <svg class="icon"><use href="#i-phone" /></svg>Ajouter à mon écran d’accueil
+        </button>
+      </div>
+      <footer>
+        <span>Un peu chaque jour, <em>beaucoup ensemble.</em></span
+        ><span aria-hidden="true">✳</span>
+      </footer>
+    </main>
+    <dialog id="dialog" aria-labelledby="dialog-title">
+      <button class="dialog-close" data-action="close" aria-label="Fermer">
+        <svg class="icon"><use href="#i-close" /></svg>
+      </button>
+      <div id="dialog-body"></div>
+    </dialog>
+    <dialog id="confirm" class="confirm-dialog" aria-labelledby="confirm-title">
+      <form method="dialog" class="confirm-body">
+        <h2 id="confirm-title">Annuler cet ajout ?</h2>
+        <p id="confirm-text"></p>
+        <div class="confirm-actions">
+          <button class="button button-outline" value="no">Non, garder</button
+          ><button class="button button-primary" value="yes">Oui, annuler</button>
+        </div>
+      </form>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite" hidden></div>
+    <noscript><p class="connection">Active JavaScript pour afficher le challenge et ajouter tes pages.</p></noscript>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
