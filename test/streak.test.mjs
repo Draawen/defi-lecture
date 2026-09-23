@@ -1,7 +1,7 @@
 // Streak rule: consecutive Paris days; breaks at midnight at the end of the day after the last reading.
 // Hourglass: from 18 h after the last reading (6 h before the 24 h mark) until that break.
 import assert from 'node:assert/strict';
-import { streakFor } from '../public/domain.js';
+import { collectiveTarget, nextGoal, streakFor } from '../public/domain.js';
 const at = (iso) => new Date(iso);
 const read = (...isos) =>
   isos.map((createdAt) => ({
@@ -54,4 +54,10 @@ s = streakFor(read('2026-12-23T19:00:00Z', '2026-12-24T19:00:00Z', '2026-12-25T1
 assert.equal(s.streak, 3);
 assert.equal(s.atRisk, false);
 
-console.log('OK — streak checks passed');
+// Collective counter: 3 000, then the next thousand once each one is reached.
+assert.deepEqual([0, 2999, 3000, 3999, 4000].map(collectiveTarget), [3000, 3000, 4000, 4000, 5000]);
+// Personal goal steps, and the next step above a goal outside the list.
+assert.deepEqual([100, 300, 500, 750, 1000, 1500].map(nextGoal), [300, 500, 750, 1000, 1500, 2000]);
+assert.deepEqual([50, 200, 1200].map(nextGoal), [100, 300, 1500]);
+
+console.log('OK — streak and goal checks passed');

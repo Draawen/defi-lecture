@@ -1,5 +1,6 @@
 // Offline test of the API routes: in-memory fake of the Upstash REST API + frozen clock.
 import assert from 'node:assert/strict';
+import { ranked } from '../public/domain.js';
 
 process.env.KV_REST_API_URL = 'https://fake.upstash';
 process.env.KV_REST_API_TOKEN = 't';
@@ -71,6 +72,8 @@ async function call(name, method, { body, query = {}, header = true } = {}) {
   return { status: res.statusCode, ...out };
 }
 const uuid = () => crypto.randomUUID();
+const raise = (participantId, goal, header = true) =>
+  call('participants', 'PATCH', { body: { participantId, goal }, header });
 
 // Before Sunday: empty, registration open, pages refused.
 let s = await call('state', 'GET');
@@ -103,6 +106,9 @@ assert.equal((await call('participants', 'GET')).status, 405);
 const cid = camille.participant.id;
 let r = await call('entries', 'POST', { body: { participantId: cid, pages: 10, requestId: uuid() } });
 assert.equal(r.status, 403);
+assert.match(r.error, /27 septembre/);
+r = await raise(cid, 500);
+assert.equal(r.status, 403, 'no goal change before the start');
 assert.match(r.error, /27 septembre/);
 
 // Sunday 27 Sept 20:00 Paris: running, day 1.
@@ -169,6 +175,44 @@ assert.equal(s.totalPages, 12);
 assert.equal(s.readerCount, 2);
 assert.equal((await call('profile', 'GET', { query: { id: 'nope' } })).status, 404);
 
+// "Viser plus haut": one step up once the current goal is reached.
+r = await raise(cid, 500);
+assert.equal(r.status, 400, 'goal not reached yet');
+assert.match(r.error, /Atteins d’abord/);
+assert.equal((await raise('nope', 300)).status, 404);
+const elise = (await call('participants', 'POST', { body: { name: 'Élise', goal: 100 } })).participant.id;
+await call('entries', 'POST', { body: { participantId: elise, pages: 120, requestId: uuid() } });
+assert.equal((await raise(elise, 300, false)).status, 403, 'missing header');
+r = await raise(elise, 500);
+assert.equal(r.status, 409, 'skipping a step');
+assert.match(r.error, /déjà changé/);
+assert.equal((await raise(elise, 300)).status, 200);
+assert.equal((await raise(elise, 300)).status, 200, 'double tap is harmless, even with pages now under the new goal');
+p = await call('profile', 'GET', { query: { id: elise } });
+assert.equal(p.participant.goal, 300);
+assert.equal(p.participant.startGoal, 100);
+assert.equal((await raise(elise, 750)).status, 409, 'stale jump');
+assert.equal((await raise(elise, 500)).status, 400, '120 pages, goal 300 not reached');
+await call('entries', 'POST', { body: { participantId: elise, pages: 200, requestId: uuid() } });
+assert.equal((await raise(elise, 500)).status, 200);
+p = await call('profile', 'GET', { query: { id: elise } });
+assert.equal(p.participant.goal, 500);
+assert.equal(p.participant.startGoal, 100, 'the starting goal is kept');
+// The goal ranking uses the starting goal: Élise 320/100 stays ahead of Hugo 90/100 (she would be 64 % of 500).
+const hugo = (await call('participants', 'POST', { body: { name: 'Hugo', goal: 100 } })).participant.id;
+await call('entries', 'POST', { body: { participantId: hugo, pages: 90, requestId: uuid() } });
+s = await call('state', 'GET');
+assert.equal(s.participants.find((x) => x.id === hugo).startGoal, 100, 'startGoal defaults to the goal');
+const byGoal = ranked(s.participants, 'goal');
+assert.deepEqual(
+  byGoal.map((x) => [x.name, Math.round(x.score)]),
+  [
+    ['Élise', 320],
+    ['Hugo', 90],
+    ['Camille', 4],
+  ],
+);
+
 // After Christmas: finished, no more writes.
 NOW = RealDate.parse('2026-12-26T09:00:00Z');
 assert.equal(
@@ -176,8 +220,11 @@ assert.equal(
   403,
 );
 assert.equal((await call('participants', 'POST', { body: { name: 'Zoé', goal: 100 } })).status, 403);
+r = await raise(hugo, 300);
+assert.equal(r.status, 403);
+assert.match(r.error, /terminé/);
 s = await call('state', 'GET');
 assert.equal(s.challenge.status, 'finished');
-assert.equal(s.totalPages, 12);
+assert.equal(s.totalPages, 422);
 
 console.log('OK — all API checks passed');

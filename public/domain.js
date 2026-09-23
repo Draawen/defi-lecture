@@ -92,7 +92,14 @@ export function snapshot(readers, entries, now = new Date()) {
     .map((p) => {
       const es = byReader.get(p.id) || [],
         s = streakFor(es, now);
-      return { id: p.id, name: p.name, goal: Number(p.goal), pages: es.reduce((s, e) => s + Number(e.pages), 0), ...s };
+      return {
+        id: p.id,
+        name: p.name,
+        goal: Number(p.goal),
+        startGoal: Number(p.startGoal || p.goal),
+        pages: es.reduce((s, e) => s + Number(e.pages), 0),
+        ...s,
+      };
     })
     .sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
   const names = new Map(readers.map((p) => [p.id, p.name]));
@@ -109,7 +116,8 @@ export function snapshot(readers, entries, now = new Date()) {
   };
 }
 export function ranked(participants, metric) {
-  const score = (p) => (metric === 'pages' ? p.pages : metric === 'streak' ? p.streak : (p.pages / p.goal) * 100);
+  // The goal ranking uses the starting goal, so raising your goal never lowers your rank.
+  const score = (p) => (metric === 'pages' ? p.pages : metric === 'streak' ? p.streak : (p.pages / p.startGoal) * 100);
   const list = participants
     .filter((p) => (metric === 'streak' ? p.streak >= 2 : p.pages > 0))
     .sort((a, b) => score(b) - score(a) || a.name.localeCompare(b.name, 'fr'));
@@ -121,6 +129,14 @@ export function ranked(participants, metric) {
     previous = value;
     return { ...p, rank, score: value };
   });
+}
+// Once the common goal is reached, the counter aims at the next thousand (3 000 -> 4 000 -> 5 000...).
+export function collectiveTarget(total) {
+  return total < CONFIG.collectiveGoal ? CONFIG.collectiveGoal : Math.floor(total / 1000) * 1000 + 1000;
+}
+// Personal goal steps: 100, 300, 500, 750, 1 000, then every 500 pages.
+export function nextGoal(goal) {
+  return [100, 300, 500, 750, 1000].find((n) => n > goal) ?? (Math.floor(goal / 500) + 1) * 500;
 }
 export function normalizedName(input) {
   const name = typeof input === 'string' ? input.normalize('NFC').trim().replace(/\s+/g, ' ') : '';

@@ -7,6 +7,12 @@ chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
 | :--------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------: |
 | <img src="docs/avant-depart.jpg" width="250" alt="Page d'accueil avant le départ"> | <img src="docs/pendant-le-defi.jpg" width="250" alt="Compteur et lecteurs pendant le défi"> | <img src="docs/profil.jpg" width="250" alt="Profil avec la série et le calendrier des 90 jours"> |
 
+**Aller plus loin**
+
+|                                              Palier 3 000 atteint                                               |                                                         Viser plus haut                                                          |                                                              Nouvel objectif                                                              |
+| :-------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: |
+| <img src="docs/palier-commun.jpg" width="250" alt="Compteur à 3 453 pages sur 4 000, palier des 3 000 atteint"> | <img src="docs/viser-plus-haut.jpg" width="250" alt="Profil d'une lectrice à 320 pages sur 300, avec le bouton Viser plus haut"> | <img src="docs/nouvel-objectif.jpg" width="250" alt="Le même profil avec son nouvel objectif de 500 pages et le message de confirmation"> |
+
 <sub>Captures faites avec des prénoms fictifs.</sub>
 
 ## Ce que fait le site
@@ -14,10 +20,14 @@ chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
 - **Inscription** avec un prénom et un objectif (100, 300 ou 500 pages), sans compte ni mot de passe.
 - **Ajout des pages lues** à partir du 27 septembre ; chaque ajout peut être annulé depuis l'historique.
 - **Compteur commun** des 3 000 pages. Dès le premier jour, la page d'accueil s'efface d'elle-même pour laisser
-  le compteur et les lecteurs en haut.
+  le compteur et les lecteurs en haut. Une fois les 3 000 pages lues, il vise le millier suivant (4 000, puis
+  5 000…).
+- **Viser plus haut** : quand un lecteur atteint son objectif, un bouton dans son profil lui propose le palier
+  suivant (300, 500, 750, 1 000, puis tous les 500).
 - **Séries 🔥** : jours de lecture d'affilée. La série casse à minuit à la fin du jour qui suit la dernière lecture ;
   le sablier ⏳ apparaît 18 h après la dernière lecture.
-- **Calendrier des 90 jours** dans chaque profil, et classements (pages, séries, objectif).
+- **Calendrier des 90 jours** dans chaque profil, et classements (pages, séries, objectif). Le classement
+  « Objectif » se calcule sur l'objectif de départ : viser plus haut ne fait jamais reculer.
 - **Installable sur l'écran d'accueil** du téléphone, comme une app.
 
 ## Organisation du code
