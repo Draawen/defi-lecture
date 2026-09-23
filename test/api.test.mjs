@@ -60,8 +60,8 @@ const cid = camille.participant.id;
 let r = await call('entries', 'POST', {body: {participantId: cid, pages: 10, requestId: uuid()}});
 assert.equal(r.status, 403); assert.match(r.error, /27 septembre/);
 
-// Sunday 27 Sept 00:30 Paris (= 26 Sept 22:30 UTC): running, day 1.
-NOW = RealDate.parse('2026-09-26T22:30:00Z');
+// Sunday 27 Sept 20:00 Paris: running, day 1.
+NOW = RealDate.parse('2026-09-27T18:00:00Z');
 const req1 = uuid();
 r = await call('entries', 'POST', {body: {participantId: cid, pages: 12, requestId: req1}});
 assert.equal(r.status, 200);
@@ -75,8 +75,8 @@ s = await call('state', 'GET');
 assert.equal(s.challenge.status, 'running'); assert.equal(s.challenge.dayNumber, 1); assert.equal(s.totalPages, 12);
 assert.equal(s.participants[0].pages, 12); assert.equal(s.recentActivity[0].readDate, '2026-09-27');
 
-// Monday: second day -> streak 2; then cancel Monday's entry.
-NOW = RealDate.parse('2026-09-28T18:00:00Z');
+// Monday 18:00 Paris, 22 h later: second day -> streak 2; then cancel Monday's entry.
+NOW = RealDate.parse('2026-09-28T16:00:00Z');
 const req2 = uuid();
 await call('entries', 'POST', {body: {participantId: cid, pages: 30, requestId: req2}});
 let p = await call('profile', 'GET', {query: {id: cid}});
