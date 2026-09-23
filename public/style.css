@@ -1428,6 +1428,58 @@ dialog h2 .streak-badge {
   max-width: calc(100% - 28px);
   pointer-events: none;
 }
+.pull {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  left: 50%;
+  z-index: 998;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 15px 5px 5px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 50px;
+  box-shadow: 0 8px 24px #234f4224;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translate(-50%, var(--pull-y, -60px));
+  pointer-events: none;
+}
+.pull.is-back {
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+.pull-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--sage);
+  display: grid;
+  place-items: center;
+  transition: background 0.2s;
+}
+.pull.is-ready .pull-badge,
+.pull.is-loading .pull-badge {
+  background: var(--lime);
+}
+.pull .icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+  transform: rotate(var(--pull-turn, 0deg));
+}
+.pull.is-loading .icon {
+  animation: pull-spin 0.8s linear infinite;
+}
+@keyframes pull-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 @media (min-width: 1180px) {
   .person {
     padding: 14px 14px 12px;

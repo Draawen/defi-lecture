@@ -556,11 +556,9 @@ let installPrompt = null;
 const isIOS =
     /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1),
   isAndroid = /Android/.test(navigator.userAgent);
+const installed = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 function showInstall() {
-  $('#install').hidden =
-    matchMedia('(display-mode: standalone)').matches ||
-    navigator.standalone === true ||
-    !(installPrompt || isIOS || isAndroid);
+  $('#install').hidden = installed() || !(installPrompt || isIOS || isAndroid);
 }
 async function install() {
   if (installPrompt) {
@@ -586,5 +584,71 @@ addEventListener('appinstalled', () => {
   $('#install').hidden = true;
 });
 showInstall();
+// Pull to refresh, only in the installed app: iPhone offers none there and Android turns its own off.
+// A full reload picks up both fresh data and a new version of the site (the service worker is network first).
+function pullToRefresh() {
+  const box = $('#pull'),
+    text = box.querySelector('.pull-text'),
+    READY = 70;
+  let start = null,
+    pull = 0,
+    back;
+  const show = (d) => {
+    clearTimeout(back);
+    box.classList.remove('is-back');
+    box.classList.toggle('is-ready', d >= READY);
+    box.style.setProperty('--pull-y', Math.min(d, READY * 1.2) - 50 + 'px');
+    box.style.setProperty('--pull-turn', (d / READY) * 300 + 'deg');
+    box.style.opacity = Math.min(1, d / 30);
+    text.textContent = d >= READY ? 'Relâche pour actualiser' : 'Tire pour actualiser';
+    box.hidden = false;
+  };
+  const hide = () => {
+    box.classList.add('is-back');
+    box.style.setProperty('--pull-y', '-60px');
+    box.style.opacity = 0;
+    back = setTimeout(() => (box.hidden = true), 260);
+  };
+  addEventListener(
+    'touchstart',
+    (e) => {
+      const free = scrollY <= 0 && !$('#dialog').open && !$('#confirm').open && !box.classList.contains('is-loading');
+      start = e.touches.length === 1 && free ? { x: e.touches[0].clientX, y: e.touches[0].clientY, down: null } : null;
+      pull = 0;
+    },
+    { passive: true },
+  );
+  addEventListener(
+    'touchmove',
+    (e) => {
+      if (!start) return;
+      const dx = e.touches[0].clientX - start.x,
+        dy = e.touches[0].clientY - start.y;
+      // Decide once, after a few pixels: only a downward, mostly vertical drag at the top of the page counts.
+      if (start.down === null && Math.max(Math.abs(dx), Math.abs(dy)) > 8) start.down = dy > Math.abs(dx);
+      if (start.down === false || e.touches.length > 1 || scrollY > 0) {
+        if (!box.hidden) hide();
+        start = null;
+        return;
+      }
+      if (!start.down) return;
+      pull = Math.max(0, dy) * 0.5;
+      show(pull);
+    },
+    { passive: true },
+  );
+  const end = (e) => {
+    if (!start) return;
+    start = null;
+    if (e.type === 'touchcancel' || pull < READY) return hide();
+    box.classList.add('is-loading');
+    box.style.setProperty('--pull-y', READY - 50 + 'px');
+    text.textContent = 'Actualisation…';
+    location.reload();
+  };
+  addEventListener('touchend', end, { passive: true });
+  addEventListener('touchcancel', end, { passive: true });
+}
+if (installed()) pullToRefresh();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 refresh().catch(() => {});

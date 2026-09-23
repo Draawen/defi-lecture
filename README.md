@@ -28,7 +28,7 @@ chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
   le sablier ⏳ apparaît 18 h après la dernière lecture.
 - **Calendrier des 90 jours** dans chaque profil, et classements (pages, séries, objectif). Le classement
   « Objectif » se calcule sur l'objectif de départ : viser plus haut ne fait jamais reculer.
-- **Installable sur l'écran d'accueil** du téléphone, comme une app.
+- **Installable sur l'écran d'accueil** du téléphone, comme une app ; on l'actualise en tirant la page vers le bas.
 
 ## Organisation du code
 
