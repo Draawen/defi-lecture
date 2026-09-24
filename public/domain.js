@@ -82,6 +82,7 @@ export function streakFor(entries, now = new Date()) {
   return { streak, atRisk, dates, times };
 }
 export function snapshot(readers, entries, now = new Date()) {
+  readers = readers.filter((p) => !p.deletedAt); // deleted profiles and their pages leave the challenge
   const c = challengeState(now),
     valid = entries.filter(
       (e) => !e.deletedAt && e.readDate >= CONFIG.startDate && e.readDate <= CONFIG.endDate && e.readDate <= c.today,

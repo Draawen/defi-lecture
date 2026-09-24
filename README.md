@@ -13,6 +13,12 @@ chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
 | :-------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: |
 | <img src="docs/palier-commun.jpg" width="250" alt="Compteur à 3 453 pages sur 4 000, palier des 3 000 atteint"> | <img src="docs/viser-plus-haut.jpg" width="250" alt="Profil d'une lectrice à 320 pages sur 300, avec le bouton Viser plus haut"> | <img src="docs/nouvel-objectif.jpg" width="250" alt="Le même profil avec son nouvel objectif de 500 pages et le message de confirmation"> |
 
+**Son profil**
+
+|                                                             Modifier ou supprimer son profil                                                              |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| <img src="docs/modifier-profil.jpg" width="250" alt="Profil en modification : champ du prénom, boutons Enregistrer et Annuler, lien Supprimer ce profil"> |
+
 <sub>Captures faites avec des prénoms fictifs.</sub>
 
 ## Ce que fait le site
@@ -26,6 +32,7 @@ chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
   suivant (300, 500, 750, 1 000, puis tous les 500).
 - **Séries 🔥** : jours de lecture d'affilée. La série casse à minuit à la fin du jour qui suit la dernière lecture ;
   le sablier ⏳ apparaît 18 h après la dernière lecture.
+- **Profil modifiable** : chacun peut corriger son prénom ou supprimer son profil, après une confirmation.
 - **Calendrier des 90 jours** dans chaque profil, et classements (pages, séries, objectif). Le classement
   « Objectif » se calcule sur l'objectif de départ : viser plus haut ne fait jamais reculer.
 - **Installable sur l'écran d'accueil** du téléphone, comme une app ; on l'actualise en tirant la page vers le bas.
@@ -64,6 +71,7 @@ Aucune dépendance à installer : Node 22 suffit.
 ## Données
 
 Les inscrits et leurs pages sont dans une base **Upstash Redis** branchée par Vercel. Les clés d'accès restent dans
-les réglages Vercel : ne jamais ajouter de fichier `.env` au dépôt.
+les réglages Vercel : ne jamais ajouter de fichier `.env` au dépôt. Un profil supprimé est seulement mis de côté dans
+la base, avec ses pages : il peut être restauré.
 
 <sub>Icône des mains jointes : [Phosphor Icons](https://phosphoricons.com) (« hands-praying »), licence MIT.</sub>

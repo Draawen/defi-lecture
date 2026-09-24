@@ -25,11 +25,26 @@ function run([c, ...a]) {
     case 'HEXISTS':
       return hash(a[0]).has(a[1]) ? 1 : 0;
     case 'EVAL': {
-      const [, , names, readers, key, id, json, max] = a;
-      if (hash(readers).size >= Number(max)) return -1;
-      if (hash(names).has(key)) return 0;
-      hash(names).set(key, id);
-      hash(readers).set(id, json);
+      const [script, , names, readers, ...v] = a;
+      if (script.includes('HLEN')) {
+        const [key, id, json, max] = v; // CREATE_READER
+        if (hash(readers).size >= Number(max)) return -1;
+        if (hash(names).has(key)) return 0;
+        hash(names).set(key, id);
+        hash(readers).set(id, json);
+        return 1;
+      }
+      const [id, expected, next, oldKey, newKey] = v; // UPDATE_READER
+      if (hash(readers).get(id) !== expected) return -1;
+      if (newKey !== oldKey) {
+        if (newKey !== '') {
+          const owner = hash(names).get(newKey);
+          if (owner && owner !== id) return 0;
+          hash(names).set(newKey, id);
+        }
+        if (hash(names).get(oldKey) === id) hash(names).delete(oldKey);
+      }
+      hash(readers).set(id, next);
       return 1;
     }
   }
@@ -74,6 +89,9 @@ async function call(name, method, { body, query = {}, header = true } = {}) {
 const uuid = () => crypto.randomUUID();
 const raise = (participantId, goal, header = true) =>
   call('participants', 'PATCH', { body: { participantId, goal }, header });
+const rename = (participantId, name, header = true) =>
+  call('participants', 'PATCH', { body: { participantId, name }, header });
+const remove = (participantId, header = true) => call('participants', 'DELETE', { body: { participantId }, header });
 
 // Before Sunday: empty, registration open, pages refused.
 let s = await call('state', 'GET');
@@ -213,6 +231,72 @@ assert.deepEqual(
   ],
 );
 
+// First name: anyone can change it (same trust as adding pages); the name key moves in one step.
+r = await rename(hugo, 'Hugo B.');
+assert.equal(r.status, 200);
+s = await call('state', 'GET');
+assert.equal(s.participants.find((x) => x.id === hugo).name, 'Hugo B.');
+assert.equal(hash('lecture:names').get('hugo b.'), hugo);
+assert.equal(hash('lecture:names').has('hugo'), false, 'old name freed');
+assert.equal((await rename(hugo, 'hugo b.')).status, 200, 'case-only change');
+assert.equal((await call('profile', 'GET', { query: { id: hugo } })).participant.name, 'hugo b.');
+r = await rename(hugo, 'élise');
+assert.equal(r.status, 409, 'taken by someone else, whatever the case or accents');
+assert.match(r.error, /existe déjà/);
+assert.equal(hash('lecture:names').get('hugo b.'), hugo, 'a refused rename keeps the name');
+r = await rename(hugo, '<b>');
+assert.equal(r.status, 400);
+assert.match(r.error, /prénom/);
+assert.equal((await rename('nope', 'Zoé')).status, 404);
+assert.equal((await rename(hugo, 'Zoé', false)).status, 403, 'missing header');
+assert.equal(
+  (await call('participants', 'PATCH', { body: { participantId: hugo, name: 'Zoé', goal: 300 } })).status,
+  400,
+  'name and goal together',
+);
+assert.equal((await call('participants', 'PATCH', { body: { participantId: hugo } })).status, 400, 'neither');
+assert.equal((await call('participants', 'POST', { body: { name: 'Hugo', goal: 100 } })).status, 200, 'old name free');
+assert.equal((await call('participants', 'POST', { body: { name: 'Hugo B', goal: 100 } })).status, 200);
+assert.equal(
+  (await call('participants', 'POST', { body: { name: 'HUGO B.', goal: 100 } })).status,
+  409,
+  'new name held',
+);
+
+// Deleting a profile: set aside in the base (pages kept), gone everywhere else, its name free again.
+const eliseEntry = (await call('profile', 'GET', { query: { id: elise } })).participant.entries[0].id;
+const before = await call('state', 'GET');
+assert.ok(before.recentActivity.some((e) => e.participantId === elise));
+assert.equal((await remove(elise, false)).status, 403, 'missing header');
+assert.equal((await remove(elise)).status, 200);
+assert.equal((await remove(elise)).status, 200, 'double delete is harmless');
+assert.equal((await remove('nope')).status, 404);
+s = await call('state', 'GET');
+assert.equal(s.totalPages, before.totalPages - 320);
+assert.equal(s.readerCount, before.readerCount - 1);
+assert.equal(
+  s.participants.some((x) => x.id === elise),
+  false,
+);
+assert.equal(
+  s.recentActivity.some((e) => e.participantId === elise),
+  false,
+);
+assert.equal(ranked(s.participants, 'goal')[0].name, 'hugo b.');
+assert.equal((await call('profile', 'GET', { query: { id: elise } })).status, 404);
+assert.equal(
+  (await call('entries', 'POST', { body: { participantId: elise, pages: 5, requestId: uuid() } })).status,
+  404,
+);
+assert.equal((await call('entries', 'DELETE', { body: { participantId: elise, entryId: eliseEntry } })).status, 404);
+assert.equal((await rename(elise, 'Élise B')).status, 404);
+assert.equal((await raise(elise, 750)).status, 404);
+const stored = JSON.parse(hash('lecture:readers').get(elise));
+assert.ok(stored.deletedAt && stored.name === 'Élise' && stored.goal === 500, 'reader kept with deletedAt');
+assert.equal([...hash('lecture:entries').values()].filter((e) => JSON.parse(e).participantId === elise).length, 2);
+assert.equal(hash('lecture:names').has('elise'), false, 'name freed');
+assert.equal((await call('participants', 'POST', { body: { name: 'Élise', goal: 100 } })).status, 200, 'name reusable');
+
 // After Christmas: finished, no more writes.
 NOW = RealDate.parse('2026-12-26T09:00:00Z');
 assert.equal(
@@ -223,8 +307,12 @@ assert.equal((await call('participants', 'POST', { body: { name: 'Zoé', goal: 1
 r = await raise(hugo, 300);
 assert.equal(r.status, 403);
 assert.match(r.error, /terminé/);
+r = await rename(hugo, 'Hugo C');
+assert.equal(r.status, 403);
+assert.match(r.error, /terminé/);
+assert.equal((await remove(hugo)).status, 403);
 s = await call('state', 'GET');
 assert.equal(s.challenge.status, 'finished');
-assert.equal(s.totalPages, 422);
+assert.equal(s.totalPages, 102);
 
 console.log('OK — all API checks passed');

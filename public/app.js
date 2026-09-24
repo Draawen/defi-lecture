@@ -42,6 +42,13 @@ const store = {
       /* private mode: selection is not remembered */
     }
   },
+  del(k) {
+    try {
+      localStorage.removeItem(k);
+    } catch {
+      /* private mode: nothing was stored */
+    }
+  },
 };
 let state = null,
   tab = 'pages',
@@ -333,13 +340,19 @@ function historyHTML(p, limit = 7) {
       .join('') || '<p class="hint">Rien pour l’instant.</p>'
   );
 }
-function renderProfile(p) {
+// The header shows the name with a "Modifier" button (until the end); in edit mode it becomes the name form.
+function profileHead(p, editing, c) {
+  return editing
+    ? `<form id="name-form" class="name-form" data-id="${esc(p.id)}"><label class="field-label" id="dialog-title" for="name-input">Ton prénom</label><input class="field name-field" id="name-input" name="name" value="${esc(p.name)}" required maxlength="32" autocomplete="off" autocapitalize="words" spellcheck="false"><div class="form-error" role="alert" hidden></div><div class="edit-actions"><button class="button button-green" type="submit">Enregistrer</button><button class="button button-outline" type="button" data-action="edit-cancel">Annuler</button></div><button type="button" class="delete-profile" data-action="delete-profile">Supprimer ce profil</button></form>`
+    : `<div class="profile-head"><h2 id="dialog-title">${esc(p.name)}${p.pages >= p.goal ? ' ✧' : ''}${streakBadge(p)}</h2>${c.status === 'finished' ? '' : `<button type="button" class="edit-name" data-action="edit-name" aria-label="Modifier le profil">${icon('edit')}Modifier</button>`}</div>`;
+}
+function renderProfile(p, editing = false) {
   p = dynamic(p);
   const c = challengeState(clock()),
     remaining = Math.max(0, p.goal - p.pages);
   activeProfile = p;
   showDialog(
-    `<h2 id="dialog-title">${esc(p.name)}${p.pages >= p.goal ? ' ✧' : ''}${streakBadge(p)}</h2><div class="profile-total">${fmt(p.pages)} <small>/ ${fmt(p.goal)} pages</small></div><div class="mini profile-progress" role="progressbar" aria-label="Progression de ${esc(p.name)}" aria-valuemin="0" aria-valuemax="${p.goal}" aria-valuenow="${Math.min(p.goal, p.pages)}"><i style="width:${Math.min(100, (p.pages / p.goal) * 100)}%"></i></div><div class="profile-caption"><span>${remaining ? `Encore ${fmt(remaining)} pages.` : 'Objectif atteint !'}</span><span>${Math.round((p.pages / p.goal) * 100)} %</span></div>${c.status === 'running' && !remaining ? `<button type="button" class="button button-primary full" data-action="raise-goal" data-id="${esc(p.id)}" data-goal="${nextGoal(p.goal)}">${icon('medal')}Viser plus haut : ${fmt(nextGoal(p.goal))} pages</button><div class="form-error" role="alert" hidden></div>` : ''}<div class="profile-streak"><strong>Cette semaine</strong>${weekHTML(p)}<button type="button" class="cal-toggle" data-action="calendar" aria-expanded="false" aria-controls="profile-calendar">Voir les 90 jours</button><div id="profile-calendar" hidden>${calendarHTML(p)}</div></div>${c.status === 'running' ? `<form id="pages-form" data-id="${esc(p.id)}" data-request="${uid()}"><label class="field-label" for="pages-input">Nouvelles pages lues (pas ton total)</label><div class="quick"><input class="field" id="pages-input" name="pages" type="number" inputmode="numeric" min="1" max="10000" step="1" required placeholder="Ex. 12"><button class="button button-green" type="submit">Ajouter</button></div><div class="form-error" role="alert" hidden></div></form>` : `<p class="profile-info">${c.status === 'scheduled' ? 'Ajout des pages à partir de dimanche.' : 'Le défi est terminé. Merci !'}</p>`}<div class="history"><h3>Historique</h3><div id="profile-history">${historyHTML(p)}</div>${p.entries.length > 7 ? `<button class="more-history" data-action="more-history">Tout voir (${p.entries.length})</button>` : ''}</div>`,
+    `${profileHead(p, editing, c)}<div class="profile-total">${fmt(p.pages)} <small>/ ${fmt(p.goal)} pages</small></div><div class="mini profile-progress" role="progressbar" aria-label="Progression de ${esc(p.name)}" aria-valuemin="0" aria-valuemax="${p.goal}" aria-valuenow="${Math.min(p.goal, p.pages)}"><i style="width:${Math.min(100, (p.pages / p.goal) * 100)}%"></i></div><div class="profile-caption"><span>${remaining ? `Encore ${fmt(remaining)} pages.` : 'Objectif atteint !'}</span><span>${Math.round((p.pages / p.goal) * 100)} %</span></div>${c.status === 'running' && !remaining ? `<button type="button" class="button button-primary full" data-action="raise-goal" data-id="${esc(p.id)}" data-goal="${nextGoal(p.goal)}">${icon('medal')}Viser plus haut : ${fmt(nextGoal(p.goal))} pages</button><div class="form-error" role="alert" hidden></div>` : ''}<div class="profile-streak"><strong>Cette semaine</strong>${weekHTML(p)}<button type="button" class="cal-toggle" data-action="calendar" aria-expanded="false" aria-controls="profile-calendar">Voir les 90 jours</button><div id="profile-calendar" hidden>${calendarHTML(p)}</div></div>${c.status === 'running' ? `<form id="pages-form" data-id="${esc(p.id)}" data-request="${uid()}"><label class="field-label" for="pages-input">Nouvelles pages lues (pas ton total)</label><div class="quick"><input class="field" id="pages-input" name="pages" type="number" inputmode="numeric" min="1" max="10000" step="1" required placeholder="Ex. 12"><button class="button button-green" type="submit">Ajouter</button></div><div class="form-error" role="alert" hidden></div></form>` : `<p class="profile-info">${c.status === 'scheduled' ? 'Ajout des pages à partir de dimanche.' : 'Le défi est terminé. Merci !'}</p>`}<div class="history"><h3>Historique</h3><div id="profile-history">${historyHTML(p)}</div>${p.entries.length > 7 ? `<button class="more-history" data-action="more-history">Tout voir (${p.entries.length})</button>` : ''}</div>`,
   );
 }
 async function openProfile(id) {
@@ -431,6 +444,13 @@ document.addEventListener('click', async (event) => {
     if (a?.dataset.action === 'retry') await refresh();
     if (a?.dataset.action === 'install') await install();
     if (a?.dataset.action === 'raise-goal') await raiseGoal(a);
+    if (a?.dataset.action === 'edit-name' && activeProfile) {
+      renderProfile(activeProfile, true);
+      $('#name-input').focus();
+      $('#name-input').select();
+    }
+    if (a?.dataset.action === 'edit-cancel' && activeProfile) renderProfile(activeProfile);
+    if (a?.dataset.action === 'delete-profile' && !a.disabled) await deleteProfile(a);
     if (a?.dataset.action === 'calendar') {
       const cal = $('#profile-calendar');
       cal.hidden = !cal.hidden;
@@ -483,14 +503,19 @@ $('#dialog').addEventListener('click', (e) => {
     }
   }
 });
-$('#dialog').addEventListener('cancel', () => profileRequest++);
-// Cancel confirmation shown on top of the profile; resolves true only on "Oui, annuler" (Esc or outside tap = keep).
-function askCancel(entry) {
+// Esc leaves the name form first, then closes the profile.
+$('#dialog').addEventListener('cancel', (e) => {
+  if ($('#name-form') && activeProfile) {
+    e.preventDefault();
+    renderProfile(activeProfile);
+  } else profileRequest++;
+});
+// Confirmation shown on top of the profile; resolves true only on the "Oui" button (Esc or outside tap = keep).
+function askConfirm(title, text, yes) {
   const box = $('#confirm');
-  if (!entry) return Promise.resolve(false);
-  const day = dateLabel(entry.createdAt);
-  $('#confirm-text').textContent =
-    `+${fmt(entry.pages)} pages, ${day === 'Aujourd’hui' ? 'aujourd’hui' : day === 'Hier' ? 'hier' : 'le ' + day} à ${timeLabel(entry.createdAt)}`;
+  $('#confirm-title').textContent = title;
+  $('#confirm-text').textContent = text;
+  box.querySelector('[value=yes]').textContent = yes;
   box.returnValue = '';
   box.showModal();
   box.querySelector('[value=no]').focus();
@@ -498,12 +523,47 @@ function askCancel(entry) {
     box.addEventListener('close', () => resolve(box.returnValue === 'yes'), { once: true }),
   );
 }
+function askCancel(entry) {
+  if (!entry) return Promise.resolve(false);
+  const day = dateLabel(entry.createdAt);
+  return askConfirm(
+    'Annuler cet ajout ?',
+    `+${fmt(entry.pages)} pages, ${day === 'Aujourd’hui' ? 'aujourd’hui' : day === 'Hier' ? 'hier' : 'le ' + day} à ${timeLabel(entry.createdAt)}`,
+    'Oui, annuler',
+  );
+}
+// Soft delete on the server: the profile and its pages leave the challenge. Errors show in the name form.
+async function deleteProfile(button) {
+  const p = activeProfile,
+    error = button.form.querySelector('.form-error'),
+    pages = p.pages ? ` et ${p.pages === 1 ? 'sa page' : `ses ${fmt(p.pages)} pages`} seront retirés` : ' sera retiré';
+  if (!(await askConfirm('Supprimer ce profil ?', `Le profil de ${p.name}${pages} du défi.`, 'Oui, supprimer'))) return;
+  error.hidden = true;
+  button.disabled = true;
+  try {
+    await api('/api/participants', 'DELETE', { participantId: p.id });
+  } catch (e) {
+    error.textContent = e.message || 'Une erreur est survenue.';
+    error.hidden = false;
+    button.disabled = false;
+    return;
+  }
+  if (selected === p.id) {
+    selected = null;
+    store.del(SELECT_KEY);
+  }
+  activeProfile = null;
+  profileRequest++;
+  $('#dialog').close();
+  toast('Profil supprimé.');
+  await refresh().catch(() => {});
+}
 $('#confirm').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) e.currentTarget.close();
 });
 document.addEventListener('submit', async (e) => {
   const form = e.target;
-  if (!['join-form', 'pages-form'].includes(form.id)) return;
+  if (!['join-form', 'pages-form', 'name-form'].includes(form.id)) return;
   e.preventDefault();
   if (form.dataset.busy === '1') return;
   const data = Object.fromEntries(new FormData(form)),
@@ -523,6 +583,14 @@ document.addEventListener('submit', async (e) => {
       await refresh();
       await openProfile(selected);
       toast('Bienvenue dans le défi !');
+    } else if (form.id === 'name-form') {
+      const id = form.dataset.id,
+        name = normalizedName(data.name).name;
+      if (name === activeProfile?.name) return renderProfile(activeProfile);
+      await api('/api/participants', 'PATCH', { participantId: id, name });
+      await refresh();
+      await openProfile(id);
+      toast('Prénom modifié.');
     } else {
       const id = form.dataset.id,
         pages = validatePages(Number(data.pages));
