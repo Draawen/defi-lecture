@@ -1,7 +1,7 @@
 // Streak rule: consecutive Paris days; breaks at midnight at the end of the day after the last reading.
 // Hourglass: from 18 h after the last reading (6 h before the 24 h mark) until that break.
 import assert from 'node:assert/strict';
-import { collectiveTarget, nextGoal, streakFor } from '../public/domain.js';
+import { collectiveTarget, nextGoal, snapshot, streakFor } from '../public/domain.js';
 const at = (iso) => new Date(iso);
 const read = (...isos) =>
   isos.map((createdAt) => ({
@@ -59,5 +59,29 @@ assert.deepEqual([0, 2999, 3000, 3999, 4000].map(collectiveTarget), [3000, 3000,
 // Personal goal steps, and the next step above a goal outside the list.
 assert.deepEqual([100, 300, 500, 750, 1000, 1500].map(nextGoal), [300, 500, 750, 1000, 1500, 2000]);
 assert.deepEqual([50, 200, 1200].map(nextGoal), [100, 300, 1500]);
+
+// Readers list order: most recently active first (signup time, or later counted-entry time if more recent).
+const readers3 = [
+  { id: 'a', name: 'Anne', createdAt: '2026-09-01T10:00:00Z', goal: 100 },
+  { id: 'b', name: 'Bruno', createdAt: '2026-09-10T10:00:00Z', goal: 100 },
+  { id: 'c', name: 'Chloé', createdAt: '2026-09-15T10:00:00Z', goal: 100 },
+];
+let snap = snapshot(readers3, [], at('2026-09-20T10:00:00Z'));
+assert.deepEqual(
+  snap.participants.map((p) => p.id),
+  ['c', 'b', 'a'],
+  'before the start: newest signup first',
+);
+// Once running, an entry for the oldest signup puts them first; a cancelled entry does not count.
+const entries3 = [
+  { participantId: 'a', createdAt: '2026-09-28T09:00:00Z', readDate: '2026-09-28', pages: 5 },
+  { participantId: 'b', createdAt: '2026-09-27T09:00:00Z', readDate: '2026-09-27', pages: 3, deletedAt: 'x' },
+];
+snap = snapshot(readers3, entries3, at('2026-09-28T12:00:00Z'));
+assert.deepEqual(
+  snap.participants.map((p) => p.id),
+  ['a', 'c', 'b'],
+  'whoever just added pages jumps to the top; a cancelled entry is ignored',
+);
 
 console.log('OK — streak and goal checks passed');

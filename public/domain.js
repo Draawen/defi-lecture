@@ -99,10 +99,17 @@ export function snapshot(readers, entries, now = new Date()) {
         goal: Number(p.goal),
         startGoal: Number(p.startGoal || p.goal),
         pages: es.reduce((s, e) => s + Number(e.pages), 0),
+        // A reader's activity is the later of their signup and their most recent counted page addition;
+        // no createdAt (legacy profile) counts as the oldest possible.
+        lastActivity: [p.createdAt, s.times[0]].filter(Boolean).sort().at(-1) || '',
         ...s,
       };
     })
-    .sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
+    // Most recently active first: whoever just added pages (or just signed up) jumps to the top.
+    .sort(
+      (a, b) =>
+        b.lastActivity.localeCompare(a.lastActivity) || a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }),
+    );
   const names = new Map(readers.map((p) => [p.id, p.name]));
   return {
     challenge: c,

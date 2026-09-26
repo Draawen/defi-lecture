@@ -161,7 +161,7 @@ s = await call('state', 'GET');
 assert.equal(s.challenge.status, 'running');
 assert.equal(s.challenge.dayNumber, 1);
 assert.equal(s.totalPages, 12);
-assert.equal(s.participants[0].pages, 12);
+assert.equal(s.participants.find((x) => x.id === cid).pages, 12);
 assert.equal(s.recentActivity[0].readDate, '2026-09-27');
 
 // Monday 18:00 Paris, 22 h later: second day -> streak 2; then cancel Monday's entry.

@@ -24,6 +24,8 @@ chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
 ## Ce que fait le site
 
 - **Inscription** avec un prénom et un objectif (100, 300 ou 500 pages), sans compte ni mot de passe.
+- **Liste des lecteurs** triée par activité la plus récente (qui vient d'ajouter des pages en premier ; avant le
+  départ, les inscriptions les plus récentes en premier).
 - **Ajout des pages lues** à partir du 27 septembre ; chaque ajout peut être annulé depuis l'historique.
 - **Compteur commun** des 3 000 pages. Dès le premier jour, la page d'accueil s'efface d'elle-même pour laisser
   le compteur et les lecteurs en haut. Une fois les 3 000 pages lues, il vise le millier suivant (4 000, puis
