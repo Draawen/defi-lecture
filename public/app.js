@@ -215,7 +215,7 @@ function render() {
     s.firstElementChild.style.width = Math.min(100, Math.max(0, ((state.totalPages - i * step) / step) * 100)) + '%';
   });
   $$('[data-action=join]').forEach((b) => (b.disabled = state.challenge.status === 'finished'));
-  $('#stats-button').hidden = scheduled;
+  $('#stats-cta').hidden = scheduled;
   renderClock();
   renderPeople();
   renderActivity();

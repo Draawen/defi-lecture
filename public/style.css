@@ -2142,26 +2142,13 @@ dialog h2 .streak-badge {
 .see-all:hover {
   background: var(--sage);
 }
-.stats-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+.stats-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+.stats-cta + .install {
   margin-top: 14px;
-  border: 1px solid #ffffff38;
-  border-radius: 99px;
-  background: #ffffff14;
-  color: #eef3e4;
-  font-size: 11px;
-  font-weight: 550;
-  padding: 7px 14px 7px 11px;
-}
-.stats-button:hover {
-  background: #ffffff26;
-}
-.stats-button .icon {
-  width: 16px;
-  height: 16px;
-  color: var(--lime);
 }
 .dialog-sub {
   font-size: 11px;

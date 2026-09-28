@@ -169,9 +169,6 @@
               ><svg class="icon"><use href="#i-users" /></svg><span id="reader-stat">— lecteurs</span></span
             >
           </div>
-          <button id="stats-button" class="stats-button" data-action="stats" hidden>
-            <svg class="icon" aria-hidden="true"><use href="#i-chart" /></svg>Voir les statistiques
-          </button>
         </div>
         <aside class="countdown-card" aria-label="Temps restant">
           <span class="eyebrow" id="countdown-eyebrow">LE GRAND DÉPART</span><strong id="countdown-value">—</strong>
@@ -275,6 +272,11 @@
           <div id="leaders" role="tabpanel" aria-labelledby="tab-pages"></div>
           <p id="leader-caption" class="micro-copy" hidden></p>
         </section>
+      </div>
+      <div class="stats-cta" id="stats-cta" hidden>
+        <button class="button button-green" data-action="stats">
+          <svg class="icon" aria-hidden="true"><use href="#i-chart" /></svg>Voir les statistiques
+        </button>
       </div>
       <div class="install" id="install" hidden>
         <button class="button install-button" data-action="install">
