@@ -19,6 +19,12 @@ chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
 | :-------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | <img src="docs/modifier-profil.jpg" width="250" alt="Profil en modification : champ du prénom, boutons Enregistrer et Annuler, lien Supprimer ce profil"> |
 
+**Statistiques**
+
+|                                                                        Statistiques                                                                         |                                                 Tous les ajouts                                                  |                                                Choisir les dates                                                 |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------: |
+| <img src="docs/statistiques.jpg" width="250" alt="Statistiques : pages cette semaine, pages par jour, meilleur jour, et courbe d'évolution des pages lues"> | <img src="docs/tous-les-ajouts.jpg" width="250" alt="Liste de tous les ajouts de pages depuis le début du défi"> | <img src="docs/calendrier.jpg" width="250" alt="Choix d'une plage de dates personnalisée dans les statistiques"> |
+
 <sub>Captures faites avec des prénoms fictifs.</sub>
 
 ## Ce que fait le site
@@ -35,6 +41,8 @@ chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
 - **Séries 🔥** : jours de lecture d'affilée. La série casse à minuit à la fin du jour qui suit la dernière lecture ;
   le sablier ⏳ apparaît 18 h après la dernière lecture.
 - **Profil modifiable** : chacun peut corriger son prénom ou supprimer son profil, après une confirmation.
+- **Statistiques** : courbe des pages lues avec période et comparaison au choix, pages par jour, lecteurs actifs,
+  heures de lecture ; « Voir tout » liste tous les ajouts.
 - **Calendrier des 90 jours** dans chaque profil, et classements (pages, séries, objectif). Le classement
   « Objectif » se calcule sur l'objectif de départ : viser plus haut ne fait jamais reculer.
 - **Installable sur l'écran d'accueil** du téléphone, comme une app ; on l'actualise en tirant la page vers le bas.
