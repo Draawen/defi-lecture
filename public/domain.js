@@ -162,21 +162,6 @@ export function stats(readers, entries, now = new Date()) {
   const monday = shiftDay(last, -((new Date(`${last}T00:00:00Z`).getUTCDay() + 6) % 7)),
     weekStart = monday < CONFIG.startDate ? CONFIG.startDate : monday,
     best = days.reduce((b, d) => (d.pages > (b?.pages ?? 0) ? d : b), null);
-  // Hour by hour, today vs yesterday (Paris calendar day and hour of createdAt), plus yesterday up to the same time.
-  const yesterday = shiftDay(c.today, -1),
-    sinceMidnight = new Date(now).getTime() - parisMidnight(c.today),
-    byHour = (date) => {
-      const out = Array(24).fill(0);
-      for (const e of list)
-        if (parisDate(e.createdAt) === date) out[Number(parisParts(e.createdAt).hour)] += Number(e.pages);
-      return out;
-    };
-  const yesterdayToNow = list
-    .filter(
-      (e) =>
-        parisDate(e.createdAt) === yesterday && Date.parse(e.createdAt) - parisMidnight(yesterday) <= sinceMidnight,
-    )
-    .reduce((t, e) => t + Number(e.pages), 0);
   return {
     challenge: c,
     totalPages: total,
@@ -190,10 +175,6 @@ export function stats(readers, entries, now = new Date()) {
     },
     averagePerDay: days.length ? Math.round((total / days.length) * 10) / 10 : 0,
     bestDay: best && { date: best.date, pages: best.pages },
-    hourNow: Number(parisParts(now).hour),
-    todayByHour: byHour(c.today),
-    yesterdayByHour: byHour(yesterday),
-    yesterdayToNow,
   };
 }
 export function ranked(participants, metric) {
@@ -229,4 +210,95 @@ export function validatePages(pages) {
   if (!Number.isInteger(pages) || pages < 1 || pages > 10000)
     throw new Error('Indique un nombre entier entre 1 et 10 000 pages.');
   return pages;
+}
+
+// "Évolution des pages lues": the chosen period against a comparison period (dates are Paris days, YYYY-MM-DD).
+// One day on both sides -> 24 hourly points (hour of createdAt); otherwise one point per day (readDate).
+const realDay = (d) =>
+  typeof d === 'string' &&
+  /^\d{4}-\d{2}-\d{2}$/.test(d) &&
+  !Number.isNaN(Date.parse(`${d}T00:00:00Z`)) &&
+  new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d;
+function checkRange(from, to, what) {
+  if (!realDay(from) || !realDay(to)) throw new Error(`${what} : dates invalides.`);
+  if (from > to) throw new Error(`${what} : la date de début est après la date de fin.`);
+  if (dayDiff(from, to) + 1 > 120) throw new Error(`${what} : 120 jours au maximum.`);
+}
+const lastDay = (today) => (today < CONFIG.endDate ? today : CONFIG.endDate);
+export function series(readers, entries, { from, to, cmpFrom, cmpTo } = {}, now = new Date()) {
+  const c = challengeState(now),
+    last = lastDay(c.today),
+    cmp = Boolean(cmpFrom || cmpTo);
+  checkRange(from, to, 'Période');
+  if (from < CONFIG.startDate || to > last)
+    throw new Error('Période : choisis des jours entre le 27 septembre et aujourd’hui.');
+  if (cmp) {
+    checkRange(cmpFrom, cmpTo, 'Comparaison');
+    if (cmpTo > last) throw new Error('Comparaison : choisis des jours passés.');
+  }
+  const list = countedEntries(readers, entries, now),
+    hourly = from === to && (!cmp || cmpFrom === cmpTo),
+    live = c.status === 'running' && to === c.today,
+    elapsed = new Date(now).getTime() - parisMidnight(from);
+  const points = (a, b) => {
+    const out = [];
+    if (hourly) for (let hour = 0; hour < 24; hour++) out.push({ date: a, hour, pages: 0 });
+    else for (let d = a; d <= b; d = shiftDay(d, 1)) out.push({ date: d, pages: 0 });
+    for (const e of list) {
+      if (e.readDate < a || e.readDate > b) continue;
+      out[hourly ? Number(parisParts(e.createdAt).hour) : dayDiff(a, e.readDate)].pages += Number(e.pages);
+    }
+    return out;
+  };
+  const current = points(from, to),
+    compare = cmp ? points(cmpFrom, cmpTo) : null,
+    total = current.reduce((t, p) => t + p.pages, 0),
+    cmpTotal = compare ? compare.reduce((t, p) => t + p.pages, 0) : null;
+  // While the period is still running, compare with the comparison period up to the same point in time.
+  const cmpToNow =
+    compare && live
+      ? list
+          .filter(
+            (e) =>
+              e.readDate >= cmpFrom &&
+              e.readDate <= cmpTo &&
+              Date.parse(e.createdAt) - parisMidnight(cmpFrom) <= elapsed,
+          )
+          .reduce((t, e) => t + Number(e.pages), 0)
+      : cmpTotal;
+  return {
+    granularity: hourly ? 'hour' : 'day',
+    from,
+    to,
+    cmpFrom: cmp ? cmpFrom : null,
+    cmpTo: cmp ? cmpTo : null,
+    today: c.today,
+    live,
+    hourNow: Number(parisParts(now).hour),
+    current,
+    compare,
+    total,
+    cmpTotal,
+    cmpTotalToNow: cmpToNow,
+  };
+}
+// Preset periods, clamped to the challenge (never before 27 Sept, never after today or 25 Dec).
+export function periodRange(key, today) {
+  const last = lastDay(today),
+    back = (n) => (shiftDay(last, -n) < CONFIG.startDate ? CONFIG.startDate : shiftDay(last, -n));
+  return {
+    today: [last, last],
+    yesterday: [back(1), back(1)],
+    week: [back(6), last],
+    month: [back(29), last],
+    all: [CONFIG.startDate, last],
+  }[key];
+}
+export function compareRange(key, from, to) {
+  const n = dayDiff(from, to) + 1;
+  return {
+    previous: [shiftDay(from, -n), shiftDay(from, -1)],
+    week: [shiftDay(from, -7), shiftDay(to, -7)],
+    none: null,
+  }[key];
 }

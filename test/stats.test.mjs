@@ -1,6 +1,6 @@
 // "Voir tout" list and statistics: same filters as the counter, Paris days (readDate) and Paris hours (createdAt).
 import assert from 'node:assert/strict';
-import { countedEntries, snapshot, stats } from '../public/domain.js';
+import { compareRange, countedEntries, periodRange, series, snapshot, stats } from '../public/domain.js';
 
 const readers = [
   { id: 'a', name: 'Anne', goal: 100 },
@@ -72,19 +72,6 @@ assert.deepEqual(s.week, { start: '2026-09-28', end: '2026-09-30', pages: 8 }, '
 assert.equal(s.averagePerDay, 9.5);
 assert.deepEqual(s.bestDay, { date: '2026-09-27', pages: 30 });
 
-// Hour by hour at Monday 28 Sept 12:30 Paris: 23:59 Sunday is yesterday's last hour, 00:01 Monday today's first;
-// the cancelled addition and the deleted reader's pages are left out. Yesterday up to 12:30 = the 10:00 reading only.
-s = stats(readers, entries, new Date('2026-09-28T10:30:00Z'));
-assert.equal(s.hourNow, 12);
-assert.equal(s.todayByHour.length, 24);
-assert.deepEqual(s.todayByHour.map((v, h) => v && [h, v]).filter(Boolean), [[0, 5]]);
-assert.deepEqual(s.yesterdayByHour.map((v, h) => v && [h, v]).filter(Boolean), [
-  [10, 10],
-  [23, 20],
-]);
-assert.equal(s.yesterdayToNow, 10);
-assert.equal(stats(readers, entries, new Date('2026-09-28T07:59:00Z')).yesterdayToNow, 0, 'before 10:00 Paris');
-
 // Sunday 27 Sept (first day, a Sunday): the week starts at the challenge start, not the Monday before.
 s = stats(readers, entries, new Date('2026-09-27T21:59:30Z'));
 assert.deepEqual(s.week, { start: '2026-09-27', end: '2026-09-27', pages: 30 });
@@ -110,5 +97,74 @@ assert.deepEqual(
   s.days.slice(-2).map((d) => d.pages),
   [6, 4],
 );
+
+// "Évolution": one day vs one day = 24 hours (hour of createdAt, Paris). Monday 28 Sept 12:30 Paris.
+const nz = (pts) => pts.map((p, i) => p.pages && [i, p.pages]).filter(Boolean);
+let v = series(
+  readers,
+  entries,
+  { from: '2026-09-28', to: '2026-09-28', cmpFrom: '2026-09-27', cmpTo: '2026-09-27' },
+  new Date('2026-09-28T10:30:00Z'),
+);
+assert.equal(v.granularity, 'hour');
+assert.equal(v.current.length, 24);
+assert.deepEqual(nz(v.current), [[0, 5]], '00:01 Paris is Monday hour 0; cancelled and deleted reader left out');
+assert.deepEqual(
+  nz(v.compare),
+  [
+    [10, 10],
+    [23, 20],
+  ],
+  '23:59 Paris stays on Sunday',
+);
+assert.deepEqual([v.total, v.cmpTotal, v.cmpTotalToNow, v.live, v.hourNow], [5, 30, 10, true, 12]);
+// No comparison: still hourly, no compare series.
+v = series(readers, entries, { from: '2026-09-27', to: '2026-09-27' }, new Date('2026-09-28T10:30:00Z'));
+assert.deepEqual([v.granularity, v.compare, v.cmpTotal, v.live, v.total], ['hour', null, null, false, 30]);
+// Several days = one point per day; the comparison may start before the challenge (those days count 0).
+v = series(readers, entries, { from: '2026-09-28', to: '2026-09-30', cmpFrom: '2026-09-25', cmpTo: '2026-09-27' }, now);
+assert.equal(v.granularity, 'day');
+assert.deepEqual(
+  v.current.map((p) => [p.date, p.pages]),
+  [
+    ['2026-09-28', 5],
+    ['2026-09-29', 0],
+    ['2026-09-30', 3],
+  ],
+);
+assert.deepEqual(
+  v.compare.map((p) => p.pages),
+  [0, 0, 30],
+);
+assert.deepEqual([v.total, v.cmpTotal, v.cmpTotalToNow], [8, 30, 10], 'running period: comparison up to Sun 12:00');
+// One day against several days: daily on both sides, aligned from the start.
+v = series(readers, entries, { from: '2026-09-30', to: '2026-09-30', cmpFrom: '2026-09-27', cmpTo: '2026-09-28' }, now);
+assert.deepEqual([v.granularity, v.current.length, v.compare.length], ['day', 1, 2]);
+// A finished period compares full totals.
+v = series(readers, entries, { from: '2026-09-27', to: '2026-09-28', cmpFrom: '2026-09-29', cmpTo: '2026-09-30' }, now);
+assert.deepEqual([v.live, v.total, v.cmpTotal, v.cmpTotalToNow], [false, 35, 3, 3]);
+// Validation (the API turns these into 400).
+for (const [q, msg] of [
+  [{}, /dates invalides/],
+  [{ from: '2026-9-28', to: '2026-09-28' }, /dates invalides/],
+  [{ from: '2026-09-28', to: '2026-02-30' }, /dates invalides/],
+  [{ from: '2026-09-29', to: '2026-09-28' }, /après/],
+  [{ from: '2026-09-26', to: '2026-09-28' }, /27 septembre/],
+  [{ from: '2026-09-28', to: '2026-10-01' }, /27 septembre/],
+  [{ from: '2026-09-28', to: '2026-09-28', cmpFrom: '2026-09-29', cmpTo: '2026-10-01' }, /jours passés/],
+  [{ from: '2026-09-28', to: '2026-09-28', cmpFrom: '2026-05-01', cmpTo: '2026-08-29' }, /120 jours/],
+  [{ from: '2026-09-28', to: '2026-09-28', cmpFrom: '2026-09-27' }, /Comparaison : dates invalides/],
+])
+  assert.throws(() => series(readers, entries, q, now), msg, JSON.stringify(q));
+// Presets, clamped to the challenge.
+assert.deepEqual(periodRange('week', '2026-09-28'), ['2026-09-27', '2026-09-28']);
+assert.deepEqual(periodRange('yesterday', '2026-09-27'), ['2026-09-27', '2026-09-27']);
+assert.deepEqual(periodRange('month', '2026-11-19'), ['2026-10-21', '2026-11-19']);
+assert.deepEqual(periodRange('all', '2026-12-28'), ['2026-09-27', '2026-12-25']);
+assert.deepEqual(periodRange('today', '2026-12-28'), ['2026-12-25', '2026-12-25']);
+assert.deepEqual(compareRange('previous', '2026-09-22', '2026-09-28'), ['2026-09-15', '2026-09-21']);
+assert.deepEqual(compareRange('previous', '2026-09-28', '2026-09-28'), ['2026-09-27', '2026-09-27']);
+assert.deepEqual(compareRange('week', '2026-10-05', '2026-10-06'), ['2026-09-28', '2026-09-29']);
+assert.equal(compareRange('none', '2026-10-05', '2026-10-06'), null);
 
 console.log('OK — activity list and statistics checks passed');

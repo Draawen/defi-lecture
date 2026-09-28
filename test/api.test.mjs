@@ -74,6 +74,7 @@ const handlers = {
   entries: (await import('../api/entries.js')).default,
   activity: (await import('../api/activity.js')).default,
   stats: (await import('../api/stats.js')).default,
+  series: (await import('../api/series.js')).default,
 };
 async function call(name, method, { body, query = {}, header = true } = {}) {
   const req = { method, query, body, headers: header && method !== 'GET' ? { 'x-challenge-request': '1' } : {} };
@@ -321,14 +322,19 @@ assert.equal(st.totalPages, s.totalPages);
 assert.equal(st.days[0].date, '2026-09-27');
 assert.equal(st.days.at(-1).date, s.challenge.today);
 assert.equal(st.days.at(-1).total, s.totalPages);
-assert.equal(
-  st.todayByHour.reduce((t, v) => t + v, 0),
-  st.days.at(-1).pages,
-);
-assert.equal(
-  st.yesterdayByHour.reduce((t, v) => t + v, 0),
-  st.days.at(-2)?.pages ?? 0,
-);
+const today = s.challenge.today;
+let sr = await call('series', 'GET', { query: { from: today, to: today, cmpFrom: '2026-09-27', cmpTo: '2026-09-27' } });
+assert.equal(sr.status, 200);
+assert.equal(sr.granularity, 'hour');
+assert.equal(sr.total, st.days.at(-1).pages);
+assert.equal(sr.cmpTotal, st.days[0].pages);
+sr = await call('series', 'GET', { query: { from: '2026-09-27', to: today } });
+assert.deepEqual([sr.status, sr.granularity, sr.total, sr.compare], [200, 'day', s.totalPages, null]);
+sr = await call('series', 'GET', { query: { from: today, to: '2026-09-27' } });
+assert.equal(sr.status, 400);
+assert.match(sr.error, /après/);
+assert.equal((await call('series', 'GET')).status, 400);
+assert.equal((await call('series', 'POST', { body: {} })).status, 405, 'read-only');
 assert.equal(
   st.hours.reduce((t, h) => t + h.additions, 0),
   act.entries.length,

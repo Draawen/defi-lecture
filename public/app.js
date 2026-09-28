@@ -4,6 +4,8 @@ import {
   nextGoal,
   parisDate,
   shiftDay,
+  periodRange,
+  compareRange,
   challengeState,
   streakFor,
   ranked,
@@ -472,62 +474,202 @@ function monotoneSegments(pts) {
   });
 }
 const hh = (h) => String(h).padStart(2, '0') + ' h';
-// Shopify-like "sales over time": pages per Paris hour, today (solid, up to now) vs yesterday (dashed, full day).
-function hourlyChart(s, width) {
+// "Évolution des pages lues", Shopify-like: a period against a comparison period. The last choice is kept in
+// memory for the session; preset ranges are recomputed from today's date each time.
+const PERIODS = {
+  today: 'Aujourd’hui',
+  yesterday: 'Hier',
+  week: '7 derniers jours',
+  month: '30 derniers jours',
+  all: 'Depuis le début',
+  custom: 'Plage personnalisée',
+};
+const COMPARES = {
+  previous: 'Période précédente',
+  week: 'Même période la semaine dernière',
+  none: 'Aucune comparaison',
+  custom: 'Plage personnalisée',
+};
+const evo = {
+  period: 'today',
+  compare: 'previous',
+  from: '',
+  to: '',
+  cmpFrom: '',
+  cmpTo: '',
+  sheet: null,
+  custom: false,
+  data: null,
+};
+const evoToday = () => challengeState(clock()).today;
+const evoLast = () => (evoToday() < CONFIG.endDate ? evoToday() : CONFIG.endDate);
+function rangeLabel(a, b) {
+  if (a === b) return dayShort(a);
+  return a.slice(0, 7) === b.slice(0, 7)
+    ? `${Number(a.slice(8))}–${dayShort(b, false)}`
+    : `${dayShort(a, false)} – ${dayShort(b, false)}`;
+}
+function evoRanges() {
+  if (evo.period !== 'custom') [evo.from, evo.to] = periodRange(evo.period, evoToday());
+  if (evo.compare !== 'custom') [evo.cmpFrom, evo.cmpTo] = compareRange(evo.compare, evo.from, evo.to) || ['', ''];
+}
+async function loadEvolution() {
+  evoRanges();
+  const q = new URLSearchParams({ from: evo.from, to: evo.to });
+  if (evo.cmpFrom) (q.set('cmpFrom', evo.cmpFrom), q.set('cmpTo', evo.cmpTo));
+  evo.data = await api('/api/series?' + q);
+  renderEvolution();
+}
+function sheetHTML(kind) {
+  const period = kind === 'period',
+    names = period ? PERIODS : COMPARES,
+    current = period ? evo.period : evo.compare,
+    [a, b] = period ? [evo.from, evo.to] : [evo.cmpFrom || evo.from, evo.cmpTo || evo.to];
+  const options = Object.entries(names)
+    .map(([key, name]) => {
+      const r = key === 'custom' ? null : period ? periodRange(key, evoToday()) : compareRange(key, evo.from, evo.to),
+        off = period && key === 'yesterday' && evoToday() <= CONFIG.startDate;
+      return `<button type="button" class="sheet-option${key === current ? ' on' : ''}" data-action="range-pick" data-kind="${kind}" data-key="${key}"${off ? ' disabled' : ''}><span>${name}</span>${r ? `<small>${rangeLabel(r[0], r[1])}</small>` : ''}</button>`;
+    })
+    .join('');
+  const custom = `<div class="custom-range"${evo.custom ? '' : ' hidden'}><label>Du<input type="date" id="range-from" class="field" min="${CONFIG.startDate}" max="${evoLast()}" value="${a}"></label><label>Au<input type="date" id="range-to" class="field" min="${CONFIG.startDate}" max="${evoLast()}" value="${b}"></label><p class="form-error" role="alert" hidden></p><div class="sheet-actions"><button type="button" class="button button-outline" data-action="range-cancel">Annuler</button><button type="button" class="button button-green" data-action="range-apply" data-kind="${kind}">Appliquer</button></div></div>`;
+  return `<div class="range-sheet" role="group" aria-label="${period ? 'Choisir la période' : 'Choisir la comparaison'}"><p class="sheet-title">${period ? 'Période' : 'Comparer à'}</p>${options}${custom}</div>`;
+}
+function evoSummary(d) {
+  const total = `<b>${plural(d.total, 'page')}</b>`;
+  if (!d.compare) return total;
+  const base = d.live ? d.cmpTotalToNow : d.cmpTotal,
+    yesterday = d.granularity === 'hour' && d.cmpFrom === shiftDay(d.from, -1),
+    when = d.live ? (d.granularity === 'hour' ? ' à la même heure' : ' au même moment') : '';
+  if (!base) return `${total} · aucune page ${yesterday ? 'hier' : 'sur la période comparée'}${when}`;
+  const pct = Math.round(((d.total - base) / base) * 100);
+  return `${total} · ${pct > 0 ? '+' : pct < 0 ? '−' : ''}${Math.abs(pct)} % par rapport à ${yesterday ? 'hier' : 'la période comparée'}${when}`;
+}
+function renderEvolution() {
+  const box = $('#evolution');
+  if (!box) return;
+  const d = evo.data,
+    pill = (kind) =>
+      `<button type="button" class="range-pill${evo.sheet === kind ? ' open' : ''}" data-action="range-open" data-kind="${kind}" aria-expanded="${evo.sheet === kind}">${kind === 'period' ? `${icon('calendar')}${evo.period === 'custom' ? rangeLabel(evo.from, evo.to) : PERIODS[evo.period]}` : `vs ${evo.compare === 'custom' ? rangeLabel(evo.cmpFrom, evo.cmpTo) : COMPARES[evo.compare]}`}</button>`;
+  const uneven = d?.compare && d.compare.length !== d.current.length;
+  box.innerHTML = `<section class="stat-card evo-card"><h3>Évolution des pages lues</h3><div class="range-pills">${pill('period')}${pill('compare')}</div>${evo.sheet ? sheetHTML(evo.sheet) : ''}${
+    d
+      ? `<p class="stat-sub">${evoSummary(d)}</p><div class="evo-chart"></div><p class="legend"><span><i class="dot-today"></i>${rangeLabel(d.from, d.to)}</span>${d.compare ? `<span><i class="dot-yesterday"></i>${rangeLabel(d.cmpFrom, d.cmpTo)}</span>` : ''}</p>${uneven ? '<p class="evo-note">Les deux périodes n’ont pas la même durée : elles sont comparées jour par jour depuis leur début.</p>' : ''}`
+      : '<p class="stat-sub">Chargement…</p>'
+  }</section>`;
+  const el = box.querySelector('.evo-chart');
+  if (el) {
+    el.innerHTML = evoChart(d, el.clientWidth);
+    evoHover(el, d);
+  }
+}
+async function rangeAction(a) {
+  const kind = a.dataset.kind,
+    act = a.dataset.action;
+  if (act === 'range-open') {
+    evo.sheet = evo.sheet === kind ? null : kind;
+    evo.custom = false;
+    return renderEvolution();
+  }
+  if (act === 'range-cancel') {
+    evo.sheet = null;
+    return renderEvolution();
+  }
+  if (act === 'range-pick' && a.dataset.key === 'custom') {
+    evo.custom = true;
+    return renderEvolution();
+  }
+  const prev = { ...evo };
+  if (act === 'range-pick') evo[kind] = a.dataset.key;
+  if (act === 'range-apply') {
+    const from = $('#range-from').value,
+      to = $('#range-to').value,
+      err = $('.range-sheet .form-error');
+    if (!from || !to || from > to) {
+      err.textContent = !from || !to ? 'Choisis les deux dates.' : 'La date « Du » doit précéder la date « Au ».';
+      err.hidden = false;
+      return;
+    }
+    evo[kind] = 'custom';
+    if (kind === 'period') [evo.from, evo.to] = [from, to];
+    else [evo.cmpFrom, evo.cmpTo] = [from, to];
+  }
+  evo.sheet = null;
+  evo.custom = false;
+  try {
+    await loadEvolution();
+  } catch (e) {
+    Object.assign(evo, prev);
+    renderEvolution();
+    throw e;
+  }
+}
+// Line chart: chosen period solid (last point dotted while it is still running), comparison dashed and lighter.
+function evoChart(d, width) {
   const H = 170,
     top = 10,
     base = H - 24,
     left = 30,
-    right = width - 6,
-    now = s.hourNow,
-    max = niceMax(Math.max(1, ...s.todayByHour.slice(0, now + 1), ...s.yesterdayByHour)),
-    x = (h) => left + (h / 23) * (right - left),
+    right = width - 8,
+    hourly = d.granularity === 'hour',
+    n = hourly ? 24 : Math.max(d.current.length, d.compare?.length || 0),
+    cur = d.current.slice(0, hourly && d.live ? d.hourNow + 1 : d.current.length).map((p) => p.pages),
+    cmp = (d.compare || []).map((p) => p.pages),
+    max = niceMax(Math.max(1, ...cur, ...cmp)),
+    x = (i) => (n === 1 ? (left + right) / 2 : left + (i / (n - 1)) * (right - left)),
     y = (v) => base - (v / max) * (base - top),
-    point = (v, h) => [x(h), y(v)];
-  const yest = s.yesterdayByHour.map(point),
-    today = s.todayByHour.slice(0, now + 1).map(point),
-    ys = monotoneSegments(yest),
-    ts = today.length > 1 ? monotoneSegments(today) : [],
     at = (p) => `M${p[0].toFixed(1)},${p[1].toFixed(1)}`;
+  const line = (vals, cls, dotted) => {
+    const pts = vals.map((v, i) => [x(i), y(v)]);
+    if (pts.length === 1) return `<circle class="${cls} single" cx="${pts[0][0]}" cy="${pts[0][1]}" r="3"/>`;
+    const segs = monotoneSegments(pts);
+    return dotted
+      ? `${segs.length > 1 ? `<path class="${cls}" d="${at(pts[0])}${segs.slice(0, -1).join('')}"/>` : ''}<path class="${cls} partial" d="${at(pts.at(-2))}${segs.at(-1)}"/>`
+      : `<path class="${cls}" d="${at(pts[0])}${segs.join('')}"/>`;
+  };
   const grid = [0, max / 2, max]
     .map(
       (v) =>
         `<line class="grid${v ? '' : ' base'}" x1="${left}" x2="${right}" y1="${y(v)}" y2="${y(v)}"/><text class="y-label" x="${left - 6}" y="${y(v) + 3}">${fmt(v)}</text>`,
     )
     .join('');
-  const labels = Array.from({ length: 8 }, (_, i) => i * 3)
-    .map((h) => `<text class="x-label" x="${x(h)}" y="${H - 6}">${hh(h)}</text>`)
-    .join('');
-  return `<div class="hourly-wrap"><svg class="hourly" width="${width}" height="${H}" role="img" aria-label="Pages lues heure par heure, aujourd’hui et hier">${grid}${labels}<path class="line-yesterday" d="${at(yest[0])}${ys.join('')}"/>${ts.length > 1 ? `<path class="line-today" d="${at(today[0])}${ts.slice(0, -1).join('')}"/>` : ''}${ts.length ? `<path class="line-today partial" d="${at(today.at(-2))}${ts.at(-1)}"/>` : ''}<line class="guide" x1="0" x2="0" y1="${top}" y2="${base}" style="display:none"/><rect class="hover" x="${left}" y="0" width="${right - left}" height="${H}"/></svg><div class="hourly-tip" hidden></div></div>`;
+  const step = hourly ? 3 : Math.max(1, Math.ceil(n / Math.max(2, Math.floor((right - left) / 52)))),
+    labels = Array.from({ length: n }, (_, i) => i)
+      .filter((i) => i % step === 0 && (hourly || i < d.current.length || i < cmp.length))
+      .map((i) => {
+        const text = hourly ? hh(i) : dayShort((d.current[i] || d.compare[i]).date, false),
+          anchor = n > 1 && x(i) > right - 20 ? 'end' : i === 0 && n > 1 ? 'start' : 'middle';
+        return `<text class="x-label" x="${x(i)}" y="${H - 6}" style="text-anchor:${anchor}">${text}</text>`;
+      })
+      .join('');
+  return `<div class="hourly-wrap"><svg class="hourly" width="${width}" height="${H}" role="img" aria-label="Évolution des pages lues">${grid}${labels}${cmp.length ? line(cmp, 'line-yesterday') : ''}${line(cur, 'line-today', d.live && cur.length > 1)}<line class="guide" x1="0" x2="0" y1="${top}" y2="${base}" style="display:none"/><rect class="hover" x="${left}" y="0" width="${right - left}" height="${H}" data-n="${n}"/></svg><div class="hourly-tip" hidden></div></div>`;
 }
-function hourlyCard(s) {
-  const t = s.todayByHour.reduce((a, v) => a + v, 0),
-    y = s.yesterdayToNow,
-    pct = y ? Math.round(((t - y) / y) * 100) : null,
-    compare =
-      pct === null
-        ? 'aucune page hier à la même heure'
-        : `${pct > 0 ? '+' : pct < 0 ? '−' : ''}${Math.abs(pct)} % par rapport à hier à la même heure`;
-  return `<section class="stat-card"><h3>Pages lues heure par heure</h3><p class="stat-sub"><b>${plural(t, 'page')} aujourd’hui</b> · ${compare}</p><div data-chart="hourly"></div><p class="legend"><span><i class="dot-today"></i>Aujourd’hui (${dayShort(s.challenge.today, false)})</span><span><i class="dot-yesterday"></i>Hier (${dayShort(shiftDay(s.challenge.today, -1), false)})</span></p></section>`;
-}
-// Tap or hover anywhere on the hourly chart: vertical guide on the nearest hour + small tooltip.
-function hourlyHover(el, s) {
+// Tap or hover anywhere on the chart: vertical guide on the nearest point + tooltip with both values.
+function evoHover(el, d) {
   const svg = el.querySelector('svg'),
     guide = svg.querySelector('.guide'),
     box = el.querySelector('.hourly-tip'),
     area = svg.querySelector('.hover'),
     left = Number(area.getAttribute('x')),
-    w = Number(area.getAttribute('width'));
+    w = Number(area.getAttribute('width')),
+    n = Number(area.dataset.n),
+    hourly = d.granularity === 'hour',
+    cmpName = hourly && d.cmpFrom === shiftDay(d.from, -1) ? 'hier' : d.cmpFrom && dayShort(d.cmpFrom);
   const show = (e) => {
     const r = svg.getBoundingClientRect(),
-      h = Math.max(0, Math.min(23, Math.round(((e.clientX - r.left - left) / w) * 23))),
-      gx = left + (h / 23) * w,
-      yest = plural(s.yesterdayByHour[h], 'page');
+      i = n === 1 ? 0 : Math.max(0, Math.min(n - 1, Math.round(((e.clientX - r.left - left) / w) * (n - 1)))),
+      gx = n === 1 ? left + w / 2 : left + (i / (n - 1)) * w,
+      c = d.current[i],
+      k = d.compare?.[i],
+      future = hourly && d.live && i > d.hourNow,
+      mine = c && (future ? 'pas encore' : plural(c.pages, 'page')),
+      theirs = k && (hourly ? `${cmpName} : ${fmt(k.pages)}` : `${dayShort(k.date)} : ${fmt(k.pages)}`);
     guide.setAttribute('x1', gx);
     guide.setAttribute('x2', gx);
     guide.style.display = '';
-    box.textContent =
-      h > s.hourNow ? `${h} h : hier ${yest}` : `${h} h : ${plural(s.todayByHour[h], 'page')} (hier : ${yest})`;
+    box.textContent = c
+      ? `${hourly ? `${i} h` : dayShort(c.date)} : ${mine}${theirs ? ` (${theirs})` : ''}`
+      : `${hourly ? `${i} h · ` : ''}${theirs}${hourly ? '' : ' pages'}`;
     box.hidden = false;
     box.style.left = Math.max(0, Math.min(r.width - box.offsetWidth, gx - box.offsetWidth / 2)) + 'px';
   };
@@ -548,7 +690,7 @@ function statsHTML(s) {
     `<section class="stat-card"><h3>${title}</h3>${sub ? `<p class="stat-sub">${sub}</p>` : ''}<div data-chart="${chart}"></div>${tip ? `<p class="chart-tip" aria-live="polite">${tip}</p>` : ''}</section>`;
   return `<h2 id="dialog-title">Statistiques</h2><p class="dialog-sub">Depuis le 27 septembre · heure de Paris</p>${
     s.days.length
-      ? `<div class="kpis">${kpi(fmt(w.pages), 'pages cette semaine', `depuis ${w.start === s.challenge.startDate ? 'le début' : 'lundi'}`)}${kpi(fmt(Math.round(s.averagePerDay)), 'pages par jour', `en moyenne sur ${plural(s.days.length, 'jour')}`)}${kpi(s.bestDay ? fmt(s.bestDay.pages) : '—', 'meilleur jour', s.bestDay ? dayShort(s.bestDay.date) : 'pas encore')}</div>${hourlyCard(s)}${card('Pages lues par jour', 'Touche une barre pour voir le détail', 'pages', dayTip(s.days.at(-1)))}${card('Vers l’objectif commun', `${fmt(s.totalPages)} pages sur ${fmt(s.target)}. En pointillés : le rythme régulier pour l’atteindre le 25 décembre.`, 'cumul')}${card('Lecteurs actifs par jour', 'Lecteurs qui ont ajouté des pages ce jour-là', 'readers', readersTip(s.days.at(-1)))}${card('À quelle heure on lit', 'Nombre d’ajouts selon l’heure', 'hours', peak.additions ? hourTip(peak) : 'Aucun ajout pour l’instant.')}`
+      ? `<div class="kpis">${kpi(fmt(w.pages), 'pages cette semaine', `depuis ${w.start === s.challenge.startDate ? 'le début' : 'lundi'}`)}${kpi(fmt(Math.round(s.averagePerDay)), 'pages par jour', `en moyenne sur ${plural(s.days.length, 'jour')}`)}${kpi(s.bestDay ? fmt(s.bestDay.pages) : '—', 'meilleur jour', s.bestDay ? dayShort(s.bestDay.date) : 'pas encore')}</div><div id="evolution"></div>${card('Pages lues par jour', 'Touche une barre pour voir le détail', 'pages', dayTip(s.days.at(-1)))}${card('Vers l’objectif commun', `${fmt(s.totalPages)} pages sur ${fmt(s.target)}. En pointillés : le rythme régulier pour l’atteindre le 25 décembre.`, 'cumul')}${card('Lecteurs actifs par jour', 'Lecteurs qui ont ajouté des pages ce jour-là', 'readers', readersTip(s.days.at(-1)))}${card('À quelle heure on lit', 'Nombre d’ajouts selon l’heure', 'hours', peak.additions ? hourTip(peak) : 'Aucun ajout pour l’instant.')}`
       : '<p class="empty-state">Les statistiques commencent le 27 septembre.</p>'
   }`;
 }
@@ -561,13 +703,13 @@ function showTip(g) {
 async function showStats() {
   const n = ++profileRequest;
   showDialog('<h2 id="dialog-title">Statistiques</h2><p class="empty-state">Chargement…</p>', true);
-  const s = await api('/api/stats');
+  evo.sheet = null;
+  const [s] = await Promise.all([api('/api/stats'), phase === 'scheduled' ? null : loadEvolution()]);
   if (n !== profileRequest) return;
   showDialog(statsHTML(s), true);
   const days = (key) => s.days.map((d) => ({ ...d, v: d[key] }));
   const charts = {
     pages: (w) => barChart(days('pages'), w, { color: 'var(--green)', label: dayAxis, tip: dayTip }),
-    hourly: (w) => hourlyChart(s, w),
     cumul: (w) => cumulativeChart(s, w),
     readers: (w) => barChart(days('readers'), w, { color: '#8a9a5b', label: dayAxis, tip: readersTip }),
     hours: (w) =>
@@ -588,8 +730,7 @@ async function showStats() {
     const sc = el.querySelector('.chart-scroll');
     if (sc) sc.scrollLeft = sc.scrollWidth; // most recent days in view
   }
-  const hourly = $('#dialog [data-chart=hourly]');
-  if (hourly) hourlyHover(hourly, s);
+  renderEvolution();
 }
 async function raiseGoal(button) {
   const error = button.nextElementSibling,
@@ -671,6 +812,7 @@ document.addEventListener('click', async (event) => {
     if (a?.dataset.action === 'install') await install();
     if (a?.dataset.action === 'all-activity') await showAllActivity();
     if (a?.dataset.action === 'stats') await showStats();
+    if (a?.dataset.action?.startsWith('range-')) await rangeAction(a);
     const tip = event.target.closest('[data-tip]');
     if (tip) showTip(tip);
     if (a?.dataset.action === 'raise-goal') await raiseGoal(a);

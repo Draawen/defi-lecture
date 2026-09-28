@@ -2408,3 +2408,121 @@ dialog.dialog-full #dialog-body {
   color: var(--ink);
   font-weight: 600;
 }
+.evo-card {
+  position: relative;
+}
+.range-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 8px;
+}
+.range-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 550;
+  padding: 6px 11px;
+}
+.range-pill .icon {
+  width: 14px;
+  height: 14px;
+  color: var(--green);
+}
+.range-pill.open,
+.range-pill:hover {
+  background: var(--sage);
+  border-color: #cfd6c3;
+}
+.range-sheet {
+  position: absolute;
+  z-index: 5;
+  left: 8px;
+  right: 8px;
+  top: 78px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px #173d3426;
+  padding: 8px;
+}
+.sheet-title {
+  margin: 4px 8px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.sheet-option {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12px;
+  text-align: left;
+  padding: 10px 9px;
+}
+.sheet-option small {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.sheet-option.on {
+  background: var(--sage);
+  font-weight: 600;
+}
+.sheet-option:disabled {
+  opacity: 0.4;
+}
+.custom-range {
+  border-top: 1px solid var(--line);
+  margin-top: 6px;
+  padding: 10px 6px 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.custom-range label {
+  display: grid;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.custom-range .field {
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  padding: 8px;
+}
+.custom-range .form-error,
+.sheet-actions {
+  grid-column: 1 / -1;
+}
+.sheet-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.evo-note {
+  margin: 6px 0 0;
+  font-size: 10px;
+  color: var(--muted);
+  font-style: italic;
+}
+circle.line-today {
+  fill: var(--green);
+}
+circle.line-yesterday {
+  fill: #9db5a6;
+}
