@@ -72,6 +72,8 @@ const handlers = {
   profile: (await import('../api/profile.js')).default,
   participants: (await import('../api/participants.js')).default,
   entries: (await import('../api/entries.js')).default,
+  activity: (await import('../api/activity.js')).default,
+  stats: (await import('../api/stats.js')).default,
 };
 async function call(name, method, { body, query = {}, header = true } = {}) {
   const req = { method, query, body, headers: header && method !== 'GET' ? { 'x-challenge-request': '1' } : {} };
@@ -98,6 +100,15 @@ let s = await call('state', 'GET');
 assert.equal(s.status, 200);
 assert.equal(s.challenge.status, 'scheduled');
 assert.equal(s.challenge.daysUntilStart, 4);
+let st = await call('stats', 'GET');
+assert.deepEqual(
+  [st.status, st.days.length, st.totalPages, st.bestDay],
+  [200, 0, 0, null],
+  'no stats before the start',
+);
+assert.deepEqual((await call('activity', 'GET')).entries, []);
+assert.equal((await call('stats', 'POST', { body: {} })).status, 405, 'read-only');
+assert.equal((await call('activity', 'DELETE', { body: {} })).status, 405, 'read-only');
 assert.equal(s.readerCount, 0);
 assert.equal(s.totalPages, 0);
 const camille = await call('participants', 'POST', { body: { name: '  Camille  ', goal: 300 } });
@@ -283,6 +294,37 @@ assert.equal(
   false,
 );
 assert.equal(ranked(s.participants, 'goal')[0].name, 'hugo b.');
+// "Voir tout" and the statistics follow the counter: no deleted reader, no cancelled addition.
+const act = await call('activity', 'GET');
+assert.equal(act.status, 200);
+assert.equal(
+  act.entries.some((e) => e.participantId === elise || e.id === req2),
+  false,
+);
+assert.equal(
+  act.entries.reduce((t, e) => t + e.pages, 0),
+  s.totalPages,
+);
+assert.deepEqual(
+  act.entries.map((e) => e.createdAt),
+  act.entries
+    .map((e) => e.createdAt)
+    .sort()
+    .reverse(),
+  'newest first',
+);
+assert.ok(act.entries.every((e) => e.name && e.readDate));
+assert.deepEqual(act.entries.slice(0, 8), s.recentActivity);
+st = await call('stats', 'GET');
+assert.equal(st.status, 200);
+assert.equal(st.totalPages, s.totalPages);
+assert.equal(st.days[0].date, '2026-09-27');
+assert.equal(st.days.at(-1).date, s.challenge.today);
+assert.equal(st.days.at(-1).total, s.totalPages);
+assert.equal(
+  st.hours.reduce((t, h) => t + h.additions, 0),
+  act.entries.length,
+);
 assert.equal((await call('profile', 'GET', { query: { id: elise } })).status, 404);
 assert.equal(
   (await call('entries', 'POST', { body: { participantId: elise, pages: 5, requestId: uuid() } })).status,

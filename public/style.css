@@ -2127,3 +2127,195 @@ dialog h2 .streak-badge {
     transition: none !important;
   }
 }
+/* "Voir tout" and statistics */
+.see-all {
+  display: block;
+  margin: 12px auto 0;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--white);
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 550;
+  padding: 8px 18px;
+}
+.see-all:hover {
+  background: var(--sage);
+}
+.stats-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  border: 1px solid #ffffff38;
+  border-radius: 99px;
+  background: #ffffff14;
+  color: #eef3e4;
+  font-size: 11px;
+  font-weight: 550;
+  padding: 7px 14px 7px 11px;
+}
+.stats-button:hover {
+  background: #ffffff26;
+}
+.stats-button .icon {
+  width: 16px;
+  height: 16px;
+  color: var(--lime);
+}
+.dialog-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin: -6px 0 14px;
+}
+.all-activity {
+  margin-top: 0;
+}
+dialog.dialog-full {
+  width: min(720px, calc(100% - 16px));
+  height: calc(100dvh - 16px);
+  max-height: calc(100dvh - 16px);
+  background: var(--paper);
+}
+dialog.dialog-full #dialog-body {
+  padding: 22px 14px 28px;
+}
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.kpi,
+.stat-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.kpi {
+  padding: 11px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.kpi strong {
+  font: 400 26px/1.1 var(--serif);
+  color: var(--green);
+  letter-spacing: -0.5px;
+}
+.kpi span {
+  font-size: 10px;
+  font-weight: 550;
+  line-height: 1.25;
+}
+.kpi small {
+  font-size: 9px;
+  color: var(--muted);
+}
+.stat-card {
+  padding: 14px 12px 12px;
+  margin-top: 10px;
+}
+.stat-card h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.stat-sub {
+  margin: 3px 0 8px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.chart {
+  display: flex;
+  margin-top: 6px;
+}
+.chart svg {
+  display: block;
+  overflow: visible;
+}
+.chart svg text {
+  font: 9px var(--sans);
+  fill: #878e7d;
+}
+.chart-axis {
+  flex: none;
+}
+.chart-axis text {
+  text-anchor: end;
+}
+.chart-scroll {
+  overflow-x: auto;
+  flex: 1;
+  scrollbar-width: thin;
+}
+.chart .grid {
+  stroke: var(--line);
+  stroke-dasharray: 2 3;
+}
+.chart .grid.base {
+  stroke: #cfd3c4;
+  stroke-dasharray: none;
+}
+.bar {
+  cursor: pointer;
+}
+.bar .hit {
+  fill: transparent;
+}
+.bar .fill {
+  fill: var(--c);
+  opacity: 0.85;
+}
+.bar text {
+  text-anchor: middle;
+}
+.bar.on .fill {
+  opacity: 1;
+  fill: var(--terra);
+}
+.bar.on text {
+  fill: var(--ink);
+  font-weight: 600;
+}
+.chart-tip {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--ink);
+  background: var(--sage);
+  border-radius: 8px;
+  padding: 6px 9px;
+}
+.cum .target {
+  stroke: var(--terra);
+  stroke-dasharray: 5 4;
+}
+.cum .target-label {
+  fill: var(--terra);
+  font-weight: 600;
+}
+.cum .pace {
+  stroke: #b8bb98;
+  stroke-dasharray: 2 4;
+}
+.cum-area {
+  fill: var(--lime);
+  opacity: 0.45;
+}
+.cum-line {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.cum-dot {
+  fill: var(--green);
+  stroke: var(--white);
+  stroke-width: 2;
+}
+.cum .cum-value {
+  fill: var(--green);
+  font-weight: 700;
+  font-size: 11px;
+}

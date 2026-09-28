@@ -213,6 +213,7 @@ function render() {
     s.firstElementChild.style.width = Math.min(100, Math.max(0, ((state.totalPages - i * step) / step) * 100)) + '%';
   });
   $$('[data-action=join]').forEach((b) => (b.disabled = state.challenge.status === 'finished'));
+  $('#stats-button').hidden = scheduled;
   renderClock();
   renderPeople();
   renderActivity();
@@ -232,15 +233,13 @@ function renderPeople() {
         .join('')
     : `<p class="empty-state">${q ? 'Aucun prénom trouvé.' : 'Aucun inscrit pour l’instant.'}</p>`;
 }
+function activityRow(e) {
+  return `<button class="activity-row" data-person="${esc(e.participantId)}" aria-label="Voir les lectures de ${esc(e.name)}">${avatar(e)}<div><strong>${esc(e.name)}</strong><div class="activity-detail">a ajouté <b>+${fmt(e.pages)} pages</b></div></div><span class="activity-time" title="${esc(fullDate(e.createdAt))}">${dateLabel(e.createdAt)}<time datetime="${esc(e.createdAt)}">${timeLabel(e.createdAt)}</time></span></button>`;
+}
 function renderActivity() {
+  $('#see-all').hidden = !state.recentActivity.length;
   $('#activity-list').innerHTML = state.recentActivity.length
-    ? state.recentActivity
-        .slice(0, 7)
-        .map(
-          (e) =>
-            `<button class="activity-row" data-person="${esc(e.participantId)}" aria-label="Voir les lectures de ${esc(e.name)}">${avatar(e)}<div><strong>${esc(e.name)}</strong><div class="activity-detail">a ajouté <b>+${fmt(e.pages)} pages</b></div></div><span class="activity-time" title="${esc(fullDate(e.createdAt))}">${dateLabel(e.createdAt)}<time datetime="${esc(e.createdAt)}">${timeLabel(e.createdAt)}</time></span></button>`,
-        )
-        .join('')
+    ? state.recentActivity.slice(0, 7).map(activityRow).join('')
     : `<p class="empty-state">${phase === 'scheduled' ? 'Premiers ajouts dimanche.' : 'Aucun ajout pour l’instant.'}</p>`;
 }
 function renderLeaders() {
@@ -259,7 +258,8 @@ function renderLeaders() {
   $('#leader-caption').textContent = caption;
   $('#leader-caption').hidden = !caption;
 }
-function showDialog(html) {
+function showDialog(html, full = false) {
+  $('#dialog').classList.toggle('dialog-full', full);
   $('#dialog-body').innerHTML = html;
   if (!$('#dialog').open) $('#dialog').showModal();
 }
@@ -365,6 +365,136 @@ async function openProfile(id) {
   renderProfile(participant);
 }
 // "Viser plus haut": errors show under the button, like the pages form.
+// "Voir tout": every counted addition since the start, newest first.
+async function showAllActivity() {
+  const n = ++profileRequest;
+  showDialog('<h2 id="dialog-title">Tous les ajouts</h2><p class="empty-state">Chargement…</p>');
+  const { entries } = await api('/api/activity');
+  if (n !== profileRequest) return;
+  const pages = entries.reduce((t, e) => t + e.pages, 0);
+  showDialog(
+    `<h2 id="dialog-title">Tous les ajouts</h2><p class="dialog-sub">${plural(entries.length, 'ajout')} · ${plural(pages, 'page')} depuis le 27 septembre</p><div class="activity-list all-activity">${entries.map(activityRow).join('') || '<p class="empty-state">Aucun ajout pour l’instant.</p>'}</div>`,
+  );
+}
+
+// Statistics: series computed by the server (/api/stats), drawn here as plain SVG.
+const dayShort = (date, weekday = true) =>
+  new Intl.DateTimeFormat('fr-FR', {
+    timeZone: 'UTC',
+    weekday: weekday ? 'short' : undefined,
+    day: 'numeric',
+    month: 'short',
+  }).format(new Date(`${date}T12:00:00Z`));
+const plural = (n, word) => `${fmt(n)} ${word}${n > 1 ? 's' : ''}`;
+const dayName = (d) => (d.date === state?.challenge.today ? 'Aujourd’hui' : dayShort(d.date));
+const dayTip = (d) => `${dayName(d)} : ${plural(d.pages, 'page')}`;
+const readersTip = (d) => `${dayName(d)} : ${plural(d.readers, 'lecteur')}`;
+const hourTip = (h) =>
+  `Entre ${h.hour} h et ${(h.hour + 1) % 24} h : ${plural(h.additions, 'ajout')}, ${plural(h.pages, 'page')}`;
+const peakHour = (hours) => hours.reduce((b, h) => (h.additions > b.additions ? h : b), hours[0]);
+function dayAxis(d, i) {
+  const day = d.date.slice(8);
+  return i === 0 || day === '01' ? dayShort(d.date, false).replace('.', '') : String(Number(day));
+}
+function niceMax(v) {
+  const p = 10 ** Math.floor(Math.log10(Math.max(1, v)));
+  return [1, 2, 2.5, 5, 10].map((m) => m * p).find((m) => m >= v);
+}
+// Bar chart: fixed y axis on the left, bars in a strip that scrolls sideways when there are too many to fit.
+function barChart(items, width, { color, label, tip, selected = items.length - 1, minSlot = 12, maxSlot = 44 }) {
+  const H = 150,
+    top = 12,
+    base = H - 22,
+    axis = 30,
+    max = niceMax(Math.max(1, ...items.map((d) => d.v))),
+    slot = Math.min(maxSlot, Math.max(minSlot, (width - axis) / items.length)),
+    W = Math.max(width - axis, items.length * slot),
+    y = (v) => base - (v / max) * (base - top),
+    bw = Math.max(4, Math.min(26, slot * 0.66)),
+    every = Math.ceil(30 / slot),
+    levels = [0, max / 2, max];
+  const grid = levels
+    .map((v) => `<line x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}" class="grid${v ? '' : ' base'}"/>`)
+    .join('');
+  const ticks = levels.map((v) => `<text x="${axis - 6}" y="${y(v) + 3}">${fmt(v)}</text>`).join('');
+  const bars = items
+    .map((d, i) => {
+      const x = i * slot + (slot - bw) / 2,
+        h = base - y(d.v),
+        text =
+          i % every === 0
+            ? `<text x="${i ? i * slot + slot / 2 : x}" y="${H - 6}"${i ? '' : ' style="text-anchor:start"'}>${esc(label(d, i))}</text>`
+            : '';
+      return `<g class="bar${i === selected ? ' on' : ''}" data-tip="${esc(tip(d))}" style="--c:${color}"><rect class="hit" x="${i * slot}" y="0" width="${slot}" height="${H}"/>${d.v ? `<rect class="fill" x="${x}" y="${base - h}" width="${bw}" height="${h}" rx="${Math.min(4, bw / 3)}"/>` : ''}${text}</g>`;
+    })
+    .join('');
+  return `<div class="chart"><svg class="chart-axis" width="${axis}" height="${H}" aria-hidden="true">${ticks}</svg><div class="chart-scroll"><svg width="${W}" height="${H}">${grid}${bars}</svg></div></div>`;
+}
+// Cumulative pages over the whole challenge (27 Sept - 25 Dec), with the collective target and a steady pace.
+function cumulativeChart(s, width) {
+  const H = 150,
+    top = 16,
+    base = H - 22,
+    left = 6,
+    right = width - 6,
+    n = s.challenge.duration,
+    max = Math.max(s.target, s.totalPages),
+    x = (i) => left + (i / (n - 1)) * (right - left),
+    y = (v) => base - (v / max) * (base - top),
+    pts = s.days.map((d, i) => `${x(i).toFixed(1)},${y(d.total).toFixed(1)}`),
+    last = s.days.length - 1;
+  const area = `<path class="cum-area" d="M${x(0)},${base} L${pts.join(' L')} L${x(last)},${base} Z"/>`;
+  return `<div class="chart"><svg width="${width}" height="${H}" class="cum" role="img" aria-label="${fmt(s.totalPages)} pages sur ${fmt(s.target)}"><line class="grid base" x1="0" x2="${width}" y1="${base}" y2="${base}"/><line class="target" x1="0" x2="${width}" y1="${y(s.target)}" y2="${y(s.target)}"/><text class="target-label" x="${right}" y="${y(s.target) - 6}" text-anchor="end">Objectif ${fmt(s.target)}</text><line class="pace" x1="${x(0)}" y1="${base}" x2="${x(n - 1)}" y2="${y(s.target)}"/>${area}<polyline class="cum-line" points="${pts.join(' ')}"/><circle class="cum-dot" cx="${x(last)}" cy="${y(s.days[last].total)}" r="4"/><text class="cum-value" x="${Math.min(x(last) + 8, right - 40)}" y="${y(s.days[last].total) + (s.totalPages > 0.8 * s.target ? 18 : -8)}">${fmt(s.totalPages)}</text><text class="x-label" x="${left}" y="${H - 6}">27 sept.</text><text class="x-label" x="${right}" y="${H - 6}" text-anchor="end">25 déc.</text></svg></div>`;
+}
+function statsHTML(s) {
+  const w = s.week,
+    peak = peakHour(s.hours);
+  const kpi = (value, label, sub) =>
+    `<div class="kpi"><strong>${value}</strong><span>${label}</span><small>${sub}</small></div>`;
+  const card = (title, sub, chart, tip) =>
+    `<section class="stat-card"><h3>${title}</h3>${sub ? `<p class="stat-sub">${sub}</p>` : ''}<div data-chart="${chart}"></div>${tip ? `<p class="chart-tip" aria-live="polite">${tip}</p>` : ''}</section>`;
+  return `<h2 id="dialog-title">Statistiques</h2><p class="dialog-sub">Depuis le 27 septembre · heure de Paris</p>${
+    s.days.length
+      ? `<div class="kpis">${kpi(fmt(w.pages), 'pages cette semaine', `depuis ${w.start === s.challenge.startDate ? 'le début' : 'lundi'}`)}${kpi(fmt(Math.round(s.averagePerDay)), 'pages par jour', `en moyenne sur ${plural(s.days.length, 'jour')}`)}${kpi(s.bestDay ? fmt(s.bestDay.pages) : '—', 'meilleur jour', s.bestDay ? dayShort(s.bestDay.date) : 'pas encore')}</div>${card('Pages lues par jour', 'Touche une barre pour voir le détail', 'pages', dayTip(s.days.at(-1)))}${card('Vers l’objectif commun', `${fmt(s.totalPages)} pages sur ${fmt(s.target)}. En pointillés : le rythme régulier pour l’atteindre le 25 décembre.`, 'cumul')}${card('Lecteurs actifs par jour', 'Lecteurs qui ont ajouté des pages ce jour-là', 'readers', readersTip(s.days.at(-1)))}${card('À quelle heure on lit', 'Nombre d’ajouts selon l’heure', 'hours', peak.additions ? hourTip(peak) : 'Aucun ajout pour l’instant.')}`
+      : '<p class="empty-state">Les statistiques commencent le 27 septembre.</p>'
+  }`;
+}
+function showTip(g) {
+  const card = g.closest('.stat-card');
+  card.querySelectorAll('.bar.on').forEach((b) => b.classList.remove('on'));
+  g.classList.add('on');
+  card.querySelector('.chart-tip').textContent = g.dataset.tip;
+}
+async function showStats() {
+  const n = ++profileRequest;
+  showDialog('<h2 id="dialog-title">Statistiques</h2><p class="empty-state">Chargement…</p>', true);
+  const s = await api('/api/stats');
+  if (n !== profileRequest) return;
+  showDialog(statsHTML(s), true);
+  const days = (key) => s.days.map((d) => ({ ...d, v: d[key] }));
+  const charts = {
+    pages: (w) => barChart(days('pages'), w, { color: 'var(--green)', label: dayAxis, tip: dayTip }),
+    cumul: (w) => cumulativeChart(s, w),
+    readers: (w) => barChart(days('readers'), w, { color: '#8a9a5b', label: dayAxis, tip: readersTip }),
+    hours: (w) =>
+      barChart(
+        s.hours.map((h) => ({ ...h, v: h.additions })),
+        w,
+        {
+          color: '#b5a16c',
+          label: (h) => `${h.hour} h`,
+          tip: hourTip,
+          selected: peakHour(s.hours).hour,
+          minSlot: 4,
+        },
+      ),
+  };
+  for (const el of $$('#dialog [data-chart]')) {
+    el.innerHTML = charts[el.dataset.chart](el.clientWidth);
+    const sc = el.querySelector('.chart-scroll');
+    if (sc) sc.scrollLeft = sc.scrollWidth; // most recent days in view
+  }
+}
 async function raiseGoal(button) {
   const error = button.nextElementSibling,
     goal = Number(button.dataset.goal);
@@ -443,6 +573,10 @@ document.addEventListener('click', async (event) => {
     }
     if (a?.dataset.action === 'retry') await refresh();
     if (a?.dataset.action === 'install') await install();
+    if (a?.dataset.action === 'all-activity') await showAllActivity();
+    if (a?.dataset.action === 'stats') await showStats();
+    const tip = event.target.closest('[data-tip]');
+    if (tip) showTip(tip);
     if (a?.dataset.action === 'raise-goal') await raiseGoal(a);
     if (a?.dataset.action === 'edit-name' && activeProfile) {
       renderProfile(activeProfile, true);

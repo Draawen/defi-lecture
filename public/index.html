@@ -53,6 +53,7 @@
         <rect height="16" rx="3" width="18" x="3" y="5"></rect>
         <path d="M7 3v4m10-4v4M3 11h18"></path>
       </symbol>
+      <symbol id="i-chart" viewbox="0 0 24 24"><path d="M3 20h18M6 16v-5m5 5V6m5 10v-7m4 7v-3"></path></symbol>
       <symbol id="i-leaf" viewbox="0 0 24 24">
         <path d="M20 3c-2 2-7 0-11 3-7 6 1 15 7 9 3-3 2-8 4-12zM4 21 15 10"></path>
       </symbol>
@@ -168,6 +169,9 @@
               ><svg class="icon"><use href="#i-users" /></svg><span id="reader-stat">— lecteurs</span></span
             >
           </div>
+          <button id="stats-button" class="stats-button" data-action="stats" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-chart" /></svg>Voir les statistiques
+          </button>
         </div>
         <aside class="countdown-card" aria-label="Temps restant">
           <span class="eyebrow" id="countdown-eyebrow">LE GRAND DÉPART</span><strong id="countdown-value">—</strong>
@@ -238,6 +242,7 @@
             <svg class="icon section-doodle" aria-hidden="true"><use href="#i-book" /></svg>
           </div>
           <div id="activity-list" class="activity-list"></div>
+          <button id="see-all" class="see-all" data-action="all-activity" hidden>Voir tout</button>
         </section>
         <section class="leaderboard-section" aria-labelledby="leaderboard-title">
           <div class="section-heading">

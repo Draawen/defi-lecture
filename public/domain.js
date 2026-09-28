@@ -81,12 +81,27 @@ export function streakFor(entries, now = new Date()) {
   const atRisk = c.status === 'running' && streak >= 2 && at >= Date.parse(times[0]) + DAY - 6 * 3600000;
   return { streak, atRisk, dates, times };
 }
+// Every page addition that counts (not cancelled, within the challenge, from a reader still in it), newest first,
+// with the reader's name: the one rule shared by the counter, the recent activity, "Voir tout" and the statistics.
+export function countedEntries(readers, entries, now = new Date()) {
+  const today = challengeState(now).today,
+    names = new Map(readers.filter((p) => !p.deletedAt).map((p) => [p.id, p.name]));
+  return entries
+    .filter(
+      (e) =>
+        !e.deletedAt &&
+        names.has(e.participantId) &&
+        e.readDate >= CONFIG.startDate &&
+        e.readDate <= CONFIG.endDate &&
+        e.readDate <= today,
+    )
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id))
+    .map((e) => ({ ...e, name: names.get(e.participantId) }));
+}
 export function snapshot(readers, entries, now = new Date()) {
   readers = readers.filter((p) => !p.deletedAt); // deleted profiles and their pages leave the challenge
   const c = challengeState(now),
-    valid = entries.filter(
-      (e) => !e.deletedAt && e.readDate >= CONFIG.startDate && e.readDate <= CONFIG.endDate && e.readDate <= c.today,
-    );
+    valid = countedEntries(readers, entries, now);
   const byReader = new Map(readers.map((p) => [p.id, []]));
   for (const e of valid) byReader.get(e.participantId)?.push(e);
   const participants = readers
@@ -110,17 +125,56 @@ export function snapshot(readers, entries, now = new Date()) {
       (a, b) =>
         b.lastActivity.localeCompare(a.lastActivity) || a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }),
     );
-  const names = new Map(readers.map((p) => [p.id, p.name]));
   return {
     challenge: c,
     participants,
     totalPages: participants.reduce((s, p) => s + p.pages, 0),
     readerCount: participants.length,
-    recentActivity: valid
-      .filter((e) => names.has(e.participantId))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id))
-      .slice(0, 8)
-      .map((e) => ({ ...e, name: names.get(e.participantId) })),
+    recentActivity: valid.slice(0, 8),
+  };
+}
+// Statistics dashboard: one entry per Paris day from the start to today (by readDate), additions per Paris hour
+// (by createdAt), and three key figures. "This week" is the calendar week, Monday to Sunday, Paris time.
+export function stats(readers, entries, now = new Date()) {
+  const c = challengeState(now),
+    list = countedEntries(readers, entries, now),
+    last = c.status === 'finished' ? CONFIG.endDate : c.today,
+    days = [];
+  if (c.status !== 'scheduled')
+    for (let d = CONFIG.startDate; d <= last; d = shiftDay(d, 1))
+      days.push({ date: d, pages: 0, readers: 0, total: 0 });
+  const byDate = new Map(days.map((d) => [d.date, { day: d, who: new Set() }])),
+    hours = Array.from({ length: 24 }, (_, hour) => ({ hour, additions: 0, pages: 0 }));
+  for (const e of list) {
+    const pages = Number(e.pages),
+      d = byDate.get(e.readDate),
+      h = hours[Number(parisParts(e.createdAt).hour)];
+    d.day.pages += pages;
+    d.who.add(e.participantId);
+    h.additions++;
+    h.pages += pages;
+  }
+  let total = 0;
+  for (const d of days) {
+    d.readers = byDate.get(d.date).who.size;
+    d.total = total += d.pages;
+  }
+  const monday = shiftDay(last, -((new Date(`${last}T00:00:00Z`).getUTCDay() + 6) % 7)),
+    weekStart = monday < CONFIG.startDate ? CONFIG.startDate : monday,
+    best = days.reduce((b, d) => (d.pages > (b?.pages ?? 0) ? d : b), null);
+  return {
+    challenge: c,
+    totalPages: total,
+    target: collectiveTarget(total),
+    days,
+    hours,
+    week: {
+      start: weekStart,
+      end: last,
+      pages: days.filter((d) => d.date >= weekStart).reduce((s, d) => s + d.pages, 0),
+    },
+    averagePerDay: days.length ? Math.round((total / days.length) * 10) / 10 : 0,
+    bestDay: best && { date: best.date, pages: best.pages },
   };
 }
 export function ranked(participants, metric) {

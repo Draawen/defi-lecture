@@ -6,6 +6,6 @@
     "node": "22.x"
   },
   "scripts": {
-    "test": "node test/api.test.mjs && node test/streak.test.mjs"
+    "test": "node test/api.test.mjs && node test/streak.test.mjs && node test/stats.test.mjs"
   }
 }
