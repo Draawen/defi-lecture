@@ -6,6 +6,10 @@ import {
   shiftDay,
   periodRange,
   compareRange,
+  monthGrid,
+  pickDay,
+  rangeBounds,
+  shiftMonth,
   challengeState,
   streakFor,
   ranked,
@@ -502,7 +506,6 @@ const evo = {
   data: null,
 };
 const evoToday = () => challengeState(clock()).today;
-const evoLast = () => (evoToday() < CONFIG.endDate ? evoToday() : CONFIG.endDate);
 function rangeLabel(a, b) {
   if (a === b) return dayShort(a);
   return a.slice(0, 7) === b.slice(0, 7)
@@ -523,8 +526,7 @@ async function loadEvolution() {
 function sheetHTML(kind) {
   const period = kind === 'period',
     names = period ? PERIODS : COMPARES,
-    current = period ? evo.period : evo.compare,
-    [a, b] = period ? [evo.from, evo.to] : [evo.cmpFrom || evo.from, evo.cmpTo || evo.to];
+    current = period ? evo.period : evo.compare;
   const options = Object.entries(names)
     .map(([key, name]) => {
       const r = key === 'custom' ? null : period ? periodRange(key, evoToday()) : compareRange(key, evo.from, evo.to),
@@ -532,8 +534,59 @@ function sheetHTML(kind) {
       return `<button type="button" class="sheet-option${key === current ? ' on' : ''}" data-action="range-pick" data-kind="${kind}" data-key="${key}"${off ? ' disabled' : ''}><span>${name}</span>${r ? `<small>${rangeLabel(r[0], r[1])}</small>` : ''}</button>`;
     })
     .join('');
-  const custom = `<div class="custom-range"${evo.custom ? '' : ' hidden'}><label>Du<input type="date" id="range-from" class="field" min="${CONFIG.startDate}" max="${evoLast()}" value="${a}"></label><label>Au<input type="date" id="range-to" class="field" min="${CONFIG.startDate}" max="${evoLast()}" value="${b}"></label><p class="form-error" role="alert" hidden></p><div class="sheet-actions"><button type="button" class="button button-outline" data-action="range-cancel">Annuler</button><button type="button" class="button button-green" data-action="range-apply" data-kind="${kind}">Appliquer</button></div></div>`;
-  return `<div class="range-sheet" role="group" aria-label="${period ? 'Choisir la période' : 'Choisir la comparaison'}"><p class="sheet-title">${period ? 'Période' : 'Comparer à'}</p>${options}${custom}</div>`;
+  return `<div class="range-sheet${evo.custom ? ' rc-open' : ''}" role="group" aria-label="${period ? 'Choisir la période' : 'Choisir la comparaison'}"><div class="sheet-options"><p class="sheet-title">${period ? 'Période' : 'Comparer à'}</p>${options}</div>${evo.custom ? calHTML(kind) : ''}</div>`;
+}
+// Custom range: Shopify-like calendar (two months side by side on wide screens, one on phones).
+const dayLong = (d) =>
+  new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' }).format(
+    new Date(`${d}T12:00:00Z`),
+  );
+const monthName = (ym) =>
+  new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', month: 'long', year: 'numeric' }).format(
+    new Date(`${ym}-01T12:00:00Z`),
+  );
+const calMonths = () => (matchMedia('(min-width: 640px)').matches ? 2 : 1);
+// First month shown: the one of the selection, without showing only future months or months before the start.
+function calStart(kind, ref) {
+  const [min, max] = rangeBounds(kind, evoToday()),
+    last = shiftMonth(max.slice(0, 7), 1 - calMonths());
+  let m = (ref || max).slice(0, 7);
+  if (m > last) m = last;
+  return min && m < min.slice(0, 7) ? min.slice(0, 7) : m;
+}
+function calHTML(kind) {
+  const p = evo.pick,
+    [min, max] = rangeBounds(kind, evoToday()),
+    today = evoToday(),
+    n = calMonths(),
+    end = p.to || p.from,
+    band = p.to && p.from !== p.to;
+  const field = (key, label) =>
+    `<button type="button" class="rc-field${p.edit === key ? ' on' : ''}" data-action="range-end" data-end="${key}" aria-label="${label}${p[key] ? ' : ' + dayLong(p[key]) : ''}">${p[key] ? dayLong(p[key]) : `<span>${label}</span>`}</button>`;
+  const day = (d) => {
+    if (!d) return '<span></span>';
+    const cls = [
+      d === p.from && 'start',
+      d === end && 'end',
+      p.to && d > p.from && d < p.to && 'in',
+      band && (d === p.from || d === p.to) && 'band',
+      d === today && 'today',
+    ].filter(Boolean);
+    return `<button type="button" class="rc-day ${cls.join(' ')}" data-action="range-day" data-date="${d}" aria-label="${dayLong(d)}" aria-pressed="${Boolean(p.from) && d >= p.from && d <= end}"${(min && d < min) || d > max ? ' disabled' : ''}><span>${Number(d.slice(8))}</span></button>`;
+  };
+  const months = Array.from({ length: n }, (_, i) => shiftMonth(p.month, i))
+    .map(
+      (ym) =>
+        `<div class="rc-month"><p class="rc-title">${monthName(ym)}</p><div class="rc-grid">${['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.'].map((w) => `<span class="rc-wd">${w}</span>`).join('')}${monthGrid(ym).map(day).join('')}</div></div>`,
+    )
+    .join('');
+  const arrow = (step, label, off) =>
+    `<button type="button" class="rc-nav ${step < 0 ? 'prev' : 'next'}" data-action="range-month" data-step="${step}" aria-label="${label}"${off ? ' disabled' : ''}>${step < 0 ? '‹' : '›'}</button>`;
+  return `<div class="custom-range"><div class="rc-fields">${field('from', 'Début')}<span aria-hidden="true">→</span>${field('to', 'Fin')}</div><div class="rc-months">${arrow(-1, 'Mois précédent', min && p.month <= min.slice(0, 7))}${arrow(1, 'Mois suivant', shiftMonth(p.month, n - 1) >= max.slice(0, 7))}${months}</div><p class="form-error" role="alert" hidden></p><div class="sheet-actions"><button type="button" class="button button-outline" data-action="range-cancel">Annuler</button><button type="button" class="button button-green" data-action="range-apply" data-kind="${kind}"${p.from && p.to ? '' : ' disabled'}>Appliquer</button></div></div>`;
+}
+function renderCal(focus) {
+  $('.custom-range').outerHTML = calHTML(evo.sheet);
+  if (focus) $(focus)?.focus();
 }
 function evoSummary(d) {
   const total = `<b>${plural(d.total, 'page')}</b>`;
@@ -576,14 +629,26 @@ async function rangeAction(a) {
     return renderEvolution();
   }
   if (act === 'range-pick' && a.dataset.key === 'custom') {
+    const [from, to] = kind === 'period' ? [evo.from, evo.to] : [evo.cmpFrom || evo.from, evo.cmpTo || evo.to];
+    evo.pick = { from, to, edit: 'new', month: calStart(kind, from) };
     evo.custom = true;
     return renderEvolution();
   }
+  if (act === 'range-day') Object.assign(evo.pick, pickDay(evo.pick, a.dataset.date));
+  if (act === 'range-end') evo.pick.edit = a.dataset.end;
+  if (act === 'range-month') evo.pick.month = shiftMonth(evo.pick.month, Number(a.dataset.step));
+  if (['range-day', 'range-end', 'range-month'].includes(act))
+    return renderCal(
+      a.dataset.date
+        ? `[data-date="${a.dataset.date}"]`
+        : a.dataset.end
+          ? `[data-end="${a.dataset.end}"]`
+          : `[data-step="${a.dataset.step}"]:enabled`,
+    );
   const prev = { ...evo };
   if (act === 'range-pick') evo[kind] = a.dataset.key;
   if (act === 'range-apply') {
-    const from = $('#range-from').value,
-      to = $('#range-to').value,
+    const { from, to } = evo.pick,
       err = $('.range-sheet .form-error');
     if (!from || !to || from > to) {
       err.textContent = !from || !to ? 'Choisis les deux dates.' : 'La date « Du » doit précéder la date « Au ».';
@@ -852,6 +917,21 @@ document.addEventListener('click', async (event) => {
   }
 });
 $('#search').addEventListener('input', renderPeople);
+// Calendar: arrow keys move between days, changing month when needed.
+document.addEventListener('keydown', (e) => {
+  const day = e.target.closest?.('.rc-day'),
+    step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+  if (!day || !step) return;
+  e.preventDefault();
+  const d = shiftDay(day.dataset.date, step),
+    [min, max] = rangeBounds(evo.sheet, evoToday()),
+    p = evo.pick,
+    n = calMonths();
+  if ((min && d < min) || d > max) return;
+  if (d.slice(0, 7) < p.month) p.month = d.slice(0, 7);
+  else if (d.slice(0, 7) > shiftMonth(p.month, n - 1)) p.month = shiftMonth(d.slice(0, 7), 1 - n);
+  renderCal(`[data-date="${d}"]`);
+});
 $('.tabs').addEventListener('keydown', (e) => {
   if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
   e.preventDefault();

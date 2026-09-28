@@ -1,6 +1,17 @@
 // "Voir tout" list and statistics: same filters as the counter, Paris days (readDate) and Paris hours (createdAt).
 import assert from 'node:assert/strict';
-import { compareRange, countedEntries, periodRange, series, snapshot, stats } from '../public/domain.js';
+import {
+  compareRange,
+  countedEntries,
+  monthGrid,
+  periodRange,
+  pickDay,
+  rangeBounds,
+  series,
+  shiftMonth,
+  snapshot,
+  stats,
+} from '../public/domain.js';
 
 const readers = [
   { id: 'a', name: 'Anne', goal: 100 },
@@ -167,4 +178,27 @@ assert.deepEqual(compareRange('previous', '2026-09-28', '2026-09-28'), ['2026-09
 assert.deepEqual(compareRange('week', '2026-10-05', '2026-10-06'), ['2026-09-28', '2026-09-29']);
 assert.equal(compareRange('none', '2026-10-05', '2026-10-06'), null);
 
+// Custom range calendar helpers.
+{
+  const sept = monthGrid('2026-09');
+  assert.equal(sept.length % 7, 0);
+  assert.deepEqual(sept.slice(0, 2), [null, '2026-09-01']); // 1 Sept 2026 is a Tuesday
+  assert.equal(sept.filter(Boolean).length, 30);
+  assert.equal(sept.indexOf('2026-09-28') % 7, 0); // Monday column
+  assert.equal(monthGrid('2026-02').indexOf('2026-02-01'), 6); // Feb 2026 starts on a Sunday
+  assert.equal(shiftMonth('2026-12', 1), '2027-01');
+  assert.equal(shiftMonth('2026-01', -1), '2025-12');
+  assert.deepEqual(rangeBounds('period', '2026-09-28'), ['2026-09-27', '2026-09-28']);
+  assert.deepEqual(rangeBounds('compare', '2026-12-30'), ['', '2026-12-25']);
+  let s = pickDay({ from: '2026-09-27', to: '2026-09-28', edit: 'new' }, '2026-09-28');
+  assert.deepEqual(s, { from: '2026-09-28', to: '', edit: 'to' });
+  assert.deepEqual(pickDay(s, '2026-09-27'), { from: '2026-09-27', to: '2026-09-28', edit: 'new' }); // swapped
+  assert.deepEqual(pickDay(s, '2026-09-30'), { from: '2026-09-28', to: '2026-09-30', edit: 'new' });
+  assert.deepEqual(pickDay({ from: '2026-09-27', to: '2026-09-30', edit: 'from' }, '2026-09-29').to, '2026-09-30');
+  assert.deepEqual(pickDay({ from: '2026-09-27', to: '2026-09-28', edit: 'from' }, '2026-09-29'), {
+    from: '2026-09-29',
+    to: '',
+    edit: 'to',
+  });
+}
 console.log('OK — activity list and statistics checks passed');

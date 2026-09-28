@@ -302,3 +302,29 @@ export function compareRange(key, from, to) {
     none: null,
   }[key];
 }
+
+// Custom range calendar (weeks start Monday; months are 'YYYY-MM').
+export function shiftMonth(ym, n) {
+  const [y, m] = ym.split('-').map(Number),
+    t = y * 12 + m - 1 + n;
+  return `${Math.floor(t / 12)}-${String((t % 12) + 1).padStart(2, '0')}`;
+}
+// Days of the month padded with null to whole Monday-first weeks.
+export function monthGrid(ym) {
+  const first = `${ym}-01`,
+    lead = (new Date(first + 'T12:00:00Z').getUTCDay() + 6) % 7,
+    days = [];
+  for (let d = first; d.slice(0, 7) === ym; d = shiftDay(d, 1)) days.push(d);
+  const cells = [...Array(lead).fill(null), ...days];
+  return [...cells, ...Array((7 - (cells.length % 7)) % 7).fill(null)];
+}
+// Selectable days: the period stays inside the challenge; the comparison may start earlier. Never after today.
+export function rangeBounds(kind, today) {
+  return [kind === 'period' ? CONFIG.startDate : '', lastDay(today)];
+}
+// One tap on a day. edit: 'new' starts a range, 'from'/'to' change that end; an end before the start swaps.
+export function pickDay({ from, to, edit }, day) {
+  if (edit === 'from' && to) return day <= to ? { from: day, to, edit: 'new' } : { from: day, to: '', edit: 'to' };
+  if (edit !== 'to' || !from) return { from: day, to: '', edit: 'to' };
+  return day < from ? { from: day, to: from, edit: 'new' } : { from, to: day, edit: 'new' };
+}
