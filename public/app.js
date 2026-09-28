@@ -446,6 +446,99 @@ function cumulativeChart(s, width) {
   const area = `<path class="cum-area" d="M${x(0)},${base} L${pts.join(' L')} L${x(last)},${base} Z"/>`;
   return `<div class="chart"><svg width="${width}" height="${H}" class="cum" role="img" aria-label="${fmt(s.totalPages)} pages sur ${fmt(s.target)}"><line class="grid base" x1="0" x2="${width}" y1="${base}" y2="${base}"/><line class="target" x1="0" x2="${width}" y1="${y(s.target)}" y2="${y(s.target)}"/><text class="target-label" x="${right}" y="${y(s.target) - 6}" text-anchor="end">Objectif ${fmt(s.target)}</text><line class="pace" x1="${x(0)}" y1="${base}" x2="${x(n - 1)}" y2="${y(s.target)}"/>${area}<polyline class="cum-line" points="${pts.join(' ')}"/><circle class="cum-dot" cx="${x(last)}" cy="${y(s.days[last].total)}" r="4"/><text class="cum-value" x="${Math.min(x(last) + 8, right - 40)}" y="${y(s.days[last].total) + (s.totalPages > 0.8 * s.target ? 18 : -8)}">${fmt(s.totalPages)}</text><text class="x-label" x="${left}" y="${H - 6}">27 sept.</text><text class="x-label" x="${right}" y="${H - 6}" text-anchor="end">25 déc.</text></svg></div>`;
 }
+// Monotone cubic curve (Fritsch-Carlson, like d3's curveMonotoneX): never overshoots, never dips below 0.
+// Returns one "C" command per segment so a curve can be split (solid part + dotted current hour).
+function monotoneSegments(pts) {
+  const n = pts.length,
+    m = pts.slice(1).map((p, i) => (p[1] - pts[i][1]) / (p[0] - pts[i][0])),
+    t = pts.map((_, i) => (i === 0 ? m[0] : i === n - 1 ? m[n - 2] : m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2));
+  for (let i = 0; i < n - 1; i++) {
+    if (!m[i]) {
+      t[i] = t[i + 1] = 0;
+      continue;
+    }
+    const a = t[i] / m[i],
+      b = t[i + 1] / m[i],
+      q = a * a + b * b;
+    if (q > 9) {
+      t[i] = (3 / Math.sqrt(q)) * a * m[i];
+      t[i + 1] = (3 / Math.sqrt(q)) * b * m[i];
+    }
+  }
+  return pts.slice(1).map((p, i) => {
+    const [x0, y0] = pts[i],
+      h = (p[0] - x0) / 3;
+    return `C${(x0 + h).toFixed(1)},${(y0 + t[i] * h).toFixed(1)} ${(p[0] - h).toFixed(1)},${(p[1] - t[i + 1] * h).toFixed(1)} ${p[0].toFixed(1)},${p[1].toFixed(1)}`;
+  });
+}
+const hh = (h) => String(h).padStart(2, '0') + ' h';
+// Shopify-like "sales over time": pages per Paris hour, today (solid, up to now) vs yesterday (dashed, full day).
+function hourlyChart(s, width) {
+  const H = 170,
+    top = 10,
+    base = H - 24,
+    left = 30,
+    right = width - 6,
+    now = s.hourNow,
+    max = niceMax(Math.max(1, ...s.todayByHour.slice(0, now + 1), ...s.yesterdayByHour)),
+    x = (h) => left + (h / 23) * (right - left),
+    y = (v) => base - (v / max) * (base - top),
+    point = (v, h) => [x(h), y(v)];
+  const yest = s.yesterdayByHour.map(point),
+    today = s.todayByHour.slice(0, now + 1).map(point),
+    ys = monotoneSegments(yest),
+    ts = today.length > 1 ? monotoneSegments(today) : [],
+    at = (p) => `M${p[0].toFixed(1)},${p[1].toFixed(1)}`;
+  const grid = [0, max / 2, max]
+    .map(
+      (v) =>
+        `<line class="grid${v ? '' : ' base'}" x1="${left}" x2="${right}" y1="${y(v)}" y2="${y(v)}"/><text class="y-label" x="${left - 6}" y="${y(v) + 3}">${fmt(v)}</text>`,
+    )
+    .join('');
+  const labels = Array.from({ length: 8 }, (_, i) => i * 3)
+    .map((h) => `<text class="x-label" x="${x(h)}" y="${H - 6}">${hh(h)}</text>`)
+    .join('');
+  return `<div class="hourly-wrap"><svg class="hourly" width="${width}" height="${H}" role="img" aria-label="Pages lues heure par heure, aujourd’hui et hier">${grid}${labels}<path class="line-yesterday" d="${at(yest[0])}${ys.join('')}"/>${ts.length > 1 ? `<path class="line-today" d="${at(today[0])}${ts.slice(0, -1).join('')}"/>` : ''}${ts.length ? `<path class="line-today partial" d="${at(today.at(-2))}${ts.at(-1)}"/>` : ''}<line class="guide" x1="0" x2="0" y1="${top}" y2="${base}" style="display:none"/><rect class="hover" x="${left}" y="0" width="${right - left}" height="${H}"/></svg><div class="hourly-tip" hidden></div></div>`;
+}
+function hourlyCard(s) {
+  const t = s.todayByHour.reduce((a, v) => a + v, 0),
+    y = s.yesterdayToNow,
+    pct = y ? Math.round(((t - y) / y) * 100) : null,
+    compare =
+      pct === null
+        ? 'aucune page hier à la même heure'
+        : `${pct > 0 ? '+' : pct < 0 ? '−' : ''}${Math.abs(pct)} % par rapport à hier à la même heure`;
+  return `<section class="stat-card"><h3>Pages lues heure par heure</h3><p class="stat-sub"><b>${plural(t, 'page')} aujourd’hui</b> · ${compare}</p><div data-chart="hourly"></div><p class="legend"><span><i class="dot-today"></i>Aujourd’hui (${dayShort(s.challenge.today, false)})</span><span><i class="dot-yesterday"></i>Hier (${dayShort(shiftDay(s.challenge.today, -1), false)})</span></p></section>`;
+}
+// Tap or hover anywhere on the hourly chart: vertical guide on the nearest hour + small tooltip.
+function hourlyHover(el, s) {
+  const svg = el.querySelector('svg'),
+    guide = svg.querySelector('.guide'),
+    box = el.querySelector('.hourly-tip'),
+    area = svg.querySelector('.hover'),
+    left = Number(area.getAttribute('x')),
+    w = Number(area.getAttribute('width'));
+  const show = (e) => {
+    const r = svg.getBoundingClientRect(),
+      h = Math.max(0, Math.min(23, Math.round(((e.clientX - r.left - left) / w) * 23))),
+      gx = left + (h / 23) * w,
+      yest = plural(s.yesterdayByHour[h], 'page');
+    guide.setAttribute('x1', gx);
+    guide.setAttribute('x2', gx);
+    guide.style.display = '';
+    box.textContent =
+      h > s.hourNow ? `${h} h : hier ${yest}` : `${h} h : ${plural(s.todayByHour[h], 'page')} (hier : ${yest})`;
+    box.hidden = false;
+    box.style.left = Math.max(0, Math.min(r.width - box.offsetWidth, gx - box.offsetWidth / 2)) + 'px';
+  };
+  svg.addEventListener('pointermove', show);
+  svg.addEventListener('pointerdown', show);
+  svg.addEventListener('pointerleave', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    guide.style.display = 'none';
+    box.hidden = true;
+  });
+}
 function statsHTML(s) {
   const w = s.week,
     peak = peakHour(s.hours);
@@ -455,7 +548,7 @@ function statsHTML(s) {
     `<section class="stat-card"><h3>${title}</h3>${sub ? `<p class="stat-sub">${sub}</p>` : ''}<div data-chart="${chart}"></div>${tip ? `<p class="chart-tip" aria-live="polite">${tip}</p>` : ''}</section>`;
   return `<h2 id="dialog-title">Statistiques</h2><p class="dialog-sub">Depuis le 27 septembre · heure de Paris</p>${
     s.days.length
-      ? `<div class="kpis">${kpi(fmt(w.pages), 'pages cette semaine', `depuis ${w.start === s.challenge.startDate ? 'le début' : 'lundi'}`)}${kpi(fmt(Math.round(s.averagePerDay)), 'pages par jour', `en moyenne sur ${plural(s.days.length, 'jour')}`)}${kpi(s.bestDay ? fmt(s.bestDay.pages) : '—', 'meilleur jour', s.bestDay ? dayShort(s.bestDay.date) : 'pas encore')}</div>${card('Pages lues par jour', 'Touche une barre pour voir le détail', 'pages', dayTip(s.days.at(-1)))}${card('Vers l’objectif commun', `${fmt(s.totalPages)} pages sur ${fmt(s.target)}. En pointillés : le rythme régulier pour l’atteindre le 25 décembre.`, 'cumul')}${card('Lecteurs actifs par jour', 'Lecteurs qui ont ajouté des pages ce jour-là', 'readers', readersTip(s.days.at(-1)))}${card('À quelle heure on lit', 'Nombre d’ajouts selon l’heure', 'hours', peak.additions ? hourTip(peak) : 'Aucun ajout pour l’instant.')}`
+      ? `<div class="kpis">${kpi(fmt(w.pages), 'pages cette semaine', `depuis ${w.start === s.challenge.startDate ? 'le début' : 'lundi'}`)}${kpi(fmt(Math.round(s.averagePerDay)), 'pages par jour', `en moyenne sur ${plural(s.days.length, 'jour')}`)}${kpi(s.bestDay ? fmt(s.bestDay.pages) : '—', 'meilleur jour', s.bestDay ? dayShort(s.bestDay.date) : 'pas encore')}</div>${hourlyCard(s)}${card('Pages lues par jour', 'Touche une barre pour voir le détail', 'pages', dayTip(s.days.at(-1)))}${card('Vers l’objectif commun', `${fmt(s.totalPages)} pages sur ${fmt(s.target)}. En pointillés : le rythme régulier pour l’atteindre le 25 décembre.`, 'cumul')}${card('Lecteurs actifs par jour', 'Lecteurs qui ont ajouté des pages ce jour-là', 'readers', readersTip(s.days.at(-1)))}${card('À quelle heure on lit', 'Nombre d’ajouts selon l’heure', 'hours', peak.additions ? hourTip(peak) : 'Aucun ajout pour l’instant.')}`
       : '<p class="empty-state">Les statistiques commencent le 27 septembre.</p>'
   }`;
 }
@@ -474,6 +567,7 @@ async function showStats() {
   const days = (key) => s.days.map((d) => ({ ...d, v: d[key] }));
   const charts = {
     pages: (w) => barChart(days('pages'), w, { color: 'var(--green)', label: dayAxis, tip: dayTip }),
+    hourly: (w) => hourlyChart(s, w),
     cumul: (w) => cumulativeChart(s, w),
     readers: (w) => barChart(days('readers'), w, { color: '#8a9a5b', label: dayAxis, tip: readersTip }),
     hours: (w) =>
@@ -494,6 +588,8 @@ async function showStats() {
     const sc = el.querySelector('.chart-scroll');
     if (sc) sc.scrollLeft = sc.scrollWidth; // most recent days in view
   }
+  const hourly = $('#dialog [data-chart=hourly]');
+  if (hourly) hourlyHover(hourly, s);
 }
 async function raiseGoal(button) {
   const error = button.nextElementSibling,

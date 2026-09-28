@@ -2319,3 +2319,92 @@ dialog.dialog-full #dialog-body {
   font-weight: 700;
   font-size: 11px;
 }
+.hourly-wrap {
+  position: relative;
+  margin-top: 6px;
+}
+.hourly {
+  display: block;
+  overflow: visible;
+  touch-action: pan-y;
+}
+.hourly text {
+  font: 9px var(--sans);
+  fill: #878e7d;
+}
+.hourly .y-label {
+  text-anchor: end;
+}
+.hourly .x-label {
+  text-anchor: middle;
+}
+.hourly .grid {
+  stroke: var(--line);
+}
+.hourly .grid.base {
+  stroke: #cfd3c4;
+}
+.line-today,
+.line-yesterday {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.line-today {
+  stroke: var(--green);
+}
+.line-today.partial {
+  stroke-dasharray: 1 4;
+}
+.line-yesterday {
+  stroke: #9db5a6;
+  stroke-dasharray: 5 4;
+}
+.hourly .guide {
+  stroke: #9aa28f;
+  stroke-width: 1;
+}
+.hourly .hover {
+  fill: transparent;
+  cursor: crosshair;
+}
+.hourly-tip {
+  position: absolute;
+  top: -4px;
+  white-space: nowrap;
+  pointer-events: none;
+  font-size: 10px;
+  color: var(--white);
+  background: var(--ink);
+  border-radius: 7px;
+  padding: 4px 8px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 8px 0 0;
+  font-size: 10px;
+  color: var(--muted);
+}
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.dot-today {
+  background: var(--green);
+}
+.dot-yesterday {
+  background: #9db5a6;
+}
+.stat-sub b {
+  color: var(--ink);
+  font-weight: 600;
+}

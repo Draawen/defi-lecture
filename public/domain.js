@@ -162,6 +162,21 @@ export function stats(readers, entries, now = new Date()) {
   const monday = shiftDay(last, -((new Date(`${last}T00:00:00Z`).getUTCDay() + 6) % 7)),
     weekStart = monday < CONFIG.startDate ? CONFIG.startDate : monday,
     best = days.reduce((b, d) => (d.pages > (b?.pages ?? 0) ? d : b), null);
+  // Hour by hour, today vs yesterday (Paris calendar day and hour of createdAt), plus yesterday up to the same time.
+  const yesterday = shiftDay(c.today, -1),
+    sinceMidnight = new Date(now).getTime() - parisMidnight(c.today),
+    byHour = (date) => {
+      const out = Array(24).fill(0);
+      for (const e of list)
+        if (parisDate(e.createdAt) === date) out[Number(parisParts(e.createdAt).hour)] += Number(e.pages);
+      return out;
+    };
+  const yesterdayToNow = list
+    .filter(
+      (e) =>
+        parisDate(e.createdAt) === yesterday && Date.parse(e.createdAt) - parisMidnight(yesterday) <= sinceMidnight,
+    )
+    .reduce((t, e) => t + Number(e.pages), 0);
   return {
     challenge: c,
     totalPages: total,
@@ -175,6 +190,10 @@ export function stats(readers, entries, now = new Date()) {
     },
     averagePerDay: days.length ? Math.round((total / days.length) * 10) / 10 : 0,
     bestDay: best && { date: best.date, pages: best.pages },
+    hourNow: Number(parisParts(now).hour),
+    todayByHour: byHour(c.today),
+    yesterdayByHour: byHour(yesterday),
+    yesterdayToNow,
   };
 }
 export function ranked(participants, metric) {

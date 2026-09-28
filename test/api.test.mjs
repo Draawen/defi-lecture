@@ -322,6 +322,14 @@ assert.equal(st.days[0].date, '2026-09-27');
 assert.equal(st.days.at(-1).date, s.challenge.today);
 assert.equal(st.days.at(-1).total, s.totalPages);
 assert.equal(
+  st.todayByHour.reduce((t, v) => t + v, 0),
+  st.days.at(-1).pages,
+);
+assert.equal(
+  st.yesterdayByHour.reduce((t, v) => t + v, 0),
+  st.days.at(-2)?.pages ?? 0,
+);
+assert.equal(
   st.hours.reduce((t, h) => t + h.additions, 0),
   act.entries.length,
 );

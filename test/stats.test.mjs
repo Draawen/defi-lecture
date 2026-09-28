@@ -72,6 +72,19 @@ assert.deepEqual(s.week, { start: '2026-09-28', end: '2026-09-30', pages: 8 }, '
 assert.equal(s.averagePerDay, 9.5);
 assert.deepEqual(s.bestDay, { date: '2026-09-27', pages: 30 });
 
+// Hour by hour at Monday 28 Sept 12:30 Paris: 23:59 Sunday is yesterday's last hour, 00:01 Monday today's first;
+// the cancelled addition and the deleted reader's pages are left out. Yesterday up to 12:30 = the 10:00 reading only.
+s = stats(readers, entries, new Date('2026-09-28T10:30:00Z'));
+assert.equal(s.hourNow, 12);
+assert.equal(s.todayByHour.length, 24);
+assert.deepEqual(s.todayByHour.map((v, h) => v && [h, v]).filter(Boolean), [[0, 5]]);
+assert.deepEqual(s.yesterdayByHour.map((v, h) => v && [h, v]).filter(Boolean), [
+  [10, 10],
+  [23, 20],
+]);
+assert.equal(s.yesterdayToNow, 10);
+assert.equal(stats(readers, entries, new Date('2026-09-28T07:59:00Z')).yesterdayToNow, 0, 'before 10:00 Paris');
+
 // Sunday 27 Sept (first day, a Sunday): the week starts at the challenge start, not the Monday before.
 s = stats(readers, entries, new Date('2026-09-27T21:59:30Z'));
 assert.deepEqual(s.week, { start: '2026-09-27', end: '2026-09-27', pages: 30 });
