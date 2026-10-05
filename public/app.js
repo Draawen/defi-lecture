@@ -29,12 +29,12 @@ const MEDALS = [
   [300, '🥈', 'argent'],
   [100, '🥉', 'bronze'],
 ];
-// Earned medals, gold first; from 2 on, the count is written small under the medal.
+// Earned medals, gold first, each with its count (×1, ×2…) written small under it.
 function medalsHTML(p) {
   const got = MEDALS.filter(([g]) => p.medals[g]);
   if (!got.length) return '';
   const label = 'Médailles : ' + got.map(([g, , n]) => `${n} ×${p.medals[g]}`).join(', ');
-  return `<span class="medals" role="img" title="${label}" aria-label="${label}">${got.map(([g, e]) => `<span class="medal">${e}${p.medals[g] > 1 ? `<small>${p.medals[g]}</small>` : ''}</span>`).join('')}</span>`;
+  return `<span class="medals" role="img" title="${label}" aria-label="${label}">${got.map(([g, e]) => `<span class="medal">${e}<small>×${p.medals[g]}</small></span>`).join('')}</span>`;
 }
 // Progress in the current palier (the totals stay cumulative: completed goals + the current one).
 const palierPct = (p) => (p.palierPages / p.goal) * 100;
