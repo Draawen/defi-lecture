@@ -137,9 +137,13 @@ const cid = camille.participant.id;
 let r = await call('entries', 'POST', { body: { participantId: cid, pages: 10, requestId: uuid() } });
 assert.equal(r.status, 403);
 assert.match(r.error, /27 septembre/);
-r = await raise(cid, 500);
-assert.equal(r.status, 403, 'no goal change before the start');
-assert.match(r.error, /27 septembre/);
+// The goal can change before the start too; the signup goal is kept as the first step of the history.
+assert.equal((await raise(cid, 500)).status, 200, 'goal change before the start');
+assert.equal((await raise(cid, 300)).status, 200);
+assert.deepEqual(
+  JSON.parse(hash('lecture:readers').get(cid)).goalHistory.map((x) => x.goal),
+  [300, 500, 300],
+);
 
 // Sunday 27 Sept 20:00 Paris: running, day 1.
 NOW = RealDate.parse('2026-09-27T18:00:00Z');
@@ -205,41 +209,54 @@ assert.equal(s.totalPages, 12);
 assert.equal(s.readerCount, 2);
 assert.equal((await call('profile', 'GET', { query: { id: 'nope' } })).status, 404);
 
-// "Viser plus haut": one step up once the current goal is reached.
-r = await raise(cid, 500);
-assert.equal(r.status, 400, 'goal not reached yet');
-assert.match(r.error, /Atteins d’abord/);
+// Goal change: 100, 300 or 500 for the current palier, never at or below the pages it already has.
+// (The clock moves a minute between steps: a change applies to the additions made from its time on.)
+const later = () => (NOW += 60000);
 assert.equal((await raise('nope', 300)).status, 404);
-const elise = (await call('participants', 'POST', { body: { name: 'Élise', goal: 100 } })).participant.id;
-await call('entries', 'POST', { body: { participantId: elise, pages: 120, requestId: uuid() } });
-assert.equal((await raise(elise, 300, false)).status, 403, 'missing header');
-r = await raise(elise, 500);
-assert.equal(r.status, 409, 'skipping a step');
-assert.match(r.error, /déjà changé/);
-assert.equal((await raise(elise, 300)).status, 200);
-assert.equal((await raise(elise, 300)).status, 200, 'double tap is harmless, even with pages now under the new goal');
-p = await call('profile', 'GET', { query: { id: elise } });
-assert.equal(p.participant.goal, 300);
-assert.equal(p.participant.startGoal, 100);
-assert.equal((await raise(elise, 750)).status, 409, 'stale jump');
-assert.equal((await raise(elise, 500)).status, 400, '120 pages, goal 300 not reached');
-await call('entries', 'POST', { body: { participantId: elise, pages: 200, requestId: uuid() } });
+const elise = (await call('participants', 'POST', { body: { name: 'Élise', goal: 300 } })).participant.id;
+await call('entries', 'POST', { body: { participantId: elise, pages: 150, requestId: uuid() } });
+assert.equal((await raise(elise, 500, false)).status, 403, 'missing header');
+assert.equal((await raise(elise, 250)).status, 400, 'not a tier');
+assert.equal((await raise(elise, '500')).status, 400, 'not a number');
+r = await raise(elise, 100);
+assert.equal(r.status, 400, '150 pages already in the palier');
+assert.equal(r.error, 'Tu as déjà lu 150 pages dans ce palier : choisis un objectif plus haut.');
+assert.equal((await raise(elise, 300)).status, 200, 'same goal is a no-op');
+assert.equal(JSON.parse(hash('lecture:readers').get(elise)).goalHistory, undefined, 'nothing saved for a no-op');
+later();
 assert.equal((await raise(elise, 500)).status, 200);
+assert.equal((await raise(elise, 500)).status, 200, 'double tap is harmless');
 p = await call('profile', 'GET', { query: { id: elise } });
-assert.equal(p.participant.goal, 500);
-assert.equal(p.participant.startGoal, 100, 'the starting goal is kept');
-// The goal ranking uses the starting goal: Élise 320/100 stays ahead of Hugo 90/100 (she would be 64 % of 500).
+assert.deepEqual([p.participant.goal, p.participant.palierPages, p.participant.medals[500]], [500, 150, 0]);
+assert.deepEqual(
+  JSON.parse(hash('lecture:readers').get(elise)).goalHistory.map((x) => x.goal),
+  [300, 500],
+);
+later();
+await call('entries', 'POST', { body: { participantId: elise, pages: 200, requestId: uuid() } });
+assert.match((await raise(elise, 300)).error, /déjà lu 350 pages/);
+later();
+await call('entries', 'POST', { body: { participantId: elise, pages: 200, requestId: uuid() } });
+p = await call('profile', 'GET', { query: { id: elise } });
+assert.deepEqual(
+  [p.participant.pages, p.participant.medals[500], p.participant.palier, p.participant.palierPages],
+  [550, 1, 2, 50],
+  'gold earned, the excess carried into palier 2',
+);
+later();
+assert.equal((await raise(elise, 100)).status, 200, '50 pages in the new palier: bronze is possible again');
+// The goal ranking: medals first (gold, silver, bronze), then progress in the current palier.
 const hugo = (await call('participants', 'POST', { body: { name: 'Hugo', goal: 100 } })).participant.id;
 await call('entries', 'POST', { body: { participantId: hugo, pages: 90, requestId: uuid() } });
 s = await call('state', 'GET');
-assert.equal(s.participants.find((x) => x.id === hugo).startGoal, 100, 'startGoal defaults to the goal');
+assert.equal(s.participants.find((x) => x.id === hugo).startGoal, undefined, 'no more startGoal');
 const byGoal = ranked(s.participants, 'goal');
 assert.deepEqual(
-  byGoal.map((x) => [x.name, Math.round(x.score)]),
+  byGoal.map((x) => [x.name, x.medals[500], Math.floor((x.palierPages / x.goal) * 100)]),
   [
-    ['Élise', 320],
-    ['Hugo', 90],
-    ['Camille', 4],
+    ['Élise', 1, 50],
+    ['Hugo', 0, 90],
+    ['Camille', 0, 4],
   ],
 );
 
@@ -284,7 +301,7 @@ assert.equal((await remove(elise)).status, 200);
 assert.equal((await remove(elise)).status, 200, 'double delete is harmless');
 assert.equal((await remove('nope')).status, 404);
 s = await call('state', 'GET');
-assert.equal(s.totalPages, before.totalPages - 320);
+assert.equal(s.totalPages, before.totalPages - 550);
 assert.equal(s.readerCount, before.readerCount - 1);
 assert.equal(
   s.participants.some((x) => x.id === elise),
@@ -346,10 +363,10 @@ assert.equal(
 );
 assert.equal((await call('entries', 'DELETE', { body: { participantId: elise, entryId: eliseEntry } })).status, 404);
 assert.equal((await rename(elise, 'Élise B')).status, 404);
-assert.equal((await raise(elise, 750)).status, 404);
+assert.equal((await raise(elise, 300)).status, 404);
 const stored = JSON.parse(hash('lecture:readers').get(elise));
-assert.ok(stored.deletedAt && stored.name === 'Élise' && stored.goal === 500, 'reader kept with deletedAt');
-assert.equal([...hash('lecture:entries').values()].filter((e) => JSON.parse(e).participantId === elise).length, 2);
+assert.ok(stored.deletedAt && stored.name === 'Élise' && stored.goal === 100, 'reader kept with deletedAt');
+assert.equal([...hash('lecture:entries').values()].filter((e) => JSON.parse(e).participantId === elise).length, 3);
 assert.equal(hash('lecture:names').has('elise'), false, 'name freed');
 assert.equal((await call('participants', 'POST', { body: { name: 'Élise', goal: 100 } })).status, 200, 'name reusable');
 

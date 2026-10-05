@@ -1,7 +1,7 @@
 // Streak rule: consecutive Paris days; breaks at midnight at the end of the day after the last reading.
 // Hourglass: from 18 h after the last reading (6 h before the 24 h mark) until that break.
 import assert from 'node:assert/strict';
-import { collectiveTarget, nextGoal, reachedGoals, snapshot, streakFor } from '../public/domain.js';
+import { collectiveTarget, goalSchedule, paliers, ranked, snapshot, streakFor } from '../public/domain.js';
 const at = (iso) => new Date(iso);
 const read = (...isos) =>
   isos.map((createdAt) => ({
@@ -56,15 +56,94 @@ assert.equal(s.atRisk, false);
 
 // Collective counter: 20 000, then the next thousand once each one is reached.
 assert.deepEqual([0, 19999, 20000, 20999, 21000].map(collectiveTarget), [20000, 20000, 21000, 21000, 22000]);
-// Personal goal steps, and the next step above a goal outside the list.
-assert.deepEqual([100, 300, 500, 750, 1000, 1500].map(nextGoal), [300, 500, 750, 1000, 1500, 2000]);
-assert.deepEqual([50, 200, 1200].map(nextGoal), [100, 300, 1500]);
-// Goals already reached: every step from the starting goal up to, but excluding, the current goal.
-assert.deepEqual(reachedGoals(100, 300), [100]);
-assert.deepEqual(reachedGoals(100, 500), [100, 300]);
-assert.deepEqual(reachedGoals(500, 750), [500]);
-assert.deepEqual(reachedGoals(300, 300), []);
-assert.deepEqual(reachedGoals(500, 1500), [500, 750, 1000]);
+// Personal paliers: [gold, silver, bronze, palier, pages in it, goal, total, completed goals].
+const T = (d, h = 10) => `2026-${d}T${String(h).padStart(2, '0')}:00:00.000Z`;
+const add = (createdAt, pages) => ({ createdAt, pages });
+const walk = (reader, entries) => {
+  const r = paliers(entries, goalSchedule({ createdAt: T('09-20'), ...reader }));
+  return [r.medals[500], r.medals[300], r.medals[100], r.palier, r.palierPages, r.goal, r.pages, r.done];
+};
+assert.deepEqual(walk({ goal: 300 }, [add(T('09-28'), 120)]), [0, 0, 0, 1, 120, 300, 120, 0], 'before any medal');
+assert.deepEqual(
+  walk({ goal: 100 }, [add(T('09-29'), 70), add(T('09-28'), 60)]),
+  [0, 0, 1, 2, 30, 100, 130, 100],
+  'oldest first; the excess carries into the next palier',
+);
+assert.deepEqual(walk({ goal: 100 }, [add(T('09-28'), 250)]), [0, 0, 2, 3, 50, 100, 250, 200], 'two in one addition');
+const changed = (...steps) => ({ goal: steps.at(-1)[0], goalHistory: steps.map(([goal, at]) => ({ goal, at })) });
+assert.deepEqual(
+  walk(changed([100, T('09-20')], [300, T('09-29')]), [add(T('09-28'), 80), add(T('09-30'), 50)]),
+  [0, 0, 0, 1, 130, 300, 130, 0],
+  'a change mid-palier applies to the current palier',
+);
+assert.deepEqual(
+  walk(changed([100, T('09-20')], [500, T('09-29')]), [add(T('09-28'), 150), add(T('09-30'), 460)]),
+  [1, 0, 1, 3, 10, 500, 610, 600],
+  'the excess carried before the change fills the new goal',
+);
+assert.deepEqual(
+  walk(changed([300, T('09-20')], [100, T('09-29')]), [add(T('09-28'), 150)]),
+  [0, 0, 1, 2, 50, 100, 150, 100],
+  'a palier already past the goal in force now completes (only after a cancellation)',
+);
+// A cancelled addition no longer counts: its medal goes away.
+const cancelled = snapshot(
+  [{ id: 'm', name: 'Marc', createdAt: T('09-20'), goal: 100 }],
+  [
+    { id: '1', participantId: 'm', createdAt: T('09-28'), readDate: '2026-09-28', pages: 60 },
+    {
+      id: '2',
+      participantId: 'm',
+      createdAt: T('09-29'),
+      readDate: '2026-09-29',
+      pages: 50,
+      deletedAt: T('09-29', 11),
+    },
+  ],
+  at('2026-09-30T10:00:00Z'),
+).participants[0];
+assert.deepEqual([cancelled.medals[100], cancelled.palierPages, cancelled.pages], [0, 60, 60]);
+// Former "Viser plus haut" profiles: startGoal until the first completed palier, then the goal (750+ counts as 500).
+const legacy = (startGoal, goal, ...pages) =>
+  walk(
+    { startGoal, goal },
+    pages.map((n, i) => add(T('09-28', i), n)),
+  );
+assert.deepEqual(legacy(300, 500, 200, 106), [0, 1, 0, 2, 6, 500, 306, 300]);
+assert.deepEqual(legacy(500, 750, 515), [1, 0, 0, 2, 15, 500, 515, 500]);
+assert.deepEqual(legacy(300, 500, 407), [0, 1, 0, 2, 107, 500, 407, 300]);
+assert.deepEqual(legacy(100, 1000, 750), [1, 0, 1, 3, 150, 500, 750, 600]);
+// A legacy profile that then changes its goal keeps its first steps (saved in its history).
+const old = { startGoal: 300, goal: 500, createdAt: T('09-20') };
+assert.deepEqual(
+  walk({ goal: 100, goalHistory: [...goalSchedule(old), { goal: 100, at: T('09-29') }] }, [
+    add(T('09-28'), 306),
+    add(T('09-30'), 100),
+  ]),
+  [0, 1, 1, 3, 6, 100, 406, 400],
+);
+// Goal ranking: gold, then silver, then bronze, then the current palier; equal readers share a rank.
+const reader = (name, gold, silver, bronze, palierPages, goal = 100) => ({
+  name,
+  pages: 1,
+  medals: { 500: gold, 300: silver, 100: bronze },
+  palierPages,
+  goal,
+});
+assert.deepEqual(
+  ranked(
+    [
+      reader('Ana', 0, 3, 0, 10),
+      reader('Ben', 1, 0, 0, 10),
+      reader('Céline', 1, 0, 0, 250, 500),
+      reader('Dan', 0, 0, 0, 90),
+      reader('Eve', 0, 3, 0, 10),
+      { ...reader('Fred', 0, 0, 0, 0), pages: 0 },
+    ],
+    'goal',
+  ).map((p) => `${p.rank} ${p.name}`),
+  ['1 Céline', '2 Ben', '3 Ana', '3 Eve', '5 Dan'],
+);
 
 // Readers list order: most recently active first (signup time, or later counted-entry time if more recent).
 const readers3 = [

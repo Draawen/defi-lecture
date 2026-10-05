@@ -862,42 +862,32 @@ svg {
   font-weight: 500;
   color: #586c48;
 }
-.person-data .reached {
-  color: #718945;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 9px;
-}
-.reached .icon {
-  width: 12px;
-  height: 12px;
-}
 .person-status,
-.profile-pct {
+.leader-value {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   white-space: nowrap;
 }
-.goal-medal {
+/* Medals: emoji, with the count written small under it from 2 on. */
+.medals {
   display: inline-flex;
+  align-items: flex-start;
+  gap: 1px;
+}
+.medal {
+  display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 2px;
-  color: var(--terra);
-  font-weight: 500;
+  font-size: 13px;
+  line-height: 1;
 }
-.goal-medal .icon {
-  width: 11px;
-  height: 11px;
-  stroke-width: 1.5;
-}
-.profile-pct .goal-medal {
-  font-size: 11px;
-}
-.profile-pct .goal-medal .icon {
-  width: 13px;
-  height: 13px;
+.medal small {
+  font-size: 8px;
+  font-weight: 600;
+  color: #828776;
+  line-height: 1;
+  margin-top: 1px;
 }
 .mini {
   height: 4px;
@@ -1285,6 +1275,50 @@ label.field-label {
 }
 .profile-progress {
   height: 6px;
+}
+.profile-palier {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 26px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #728061;
+}
+.profile-palier .medal {
+  font-size: 20px;
+}
+.profile-palier .medal small {
+  font-size: 10px;
+}
+.goal-change {
+  margin-top: 18px;
+}
+#goal-choices {
+  margin-top: 12px;
+}
+button.goal {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+}
+button.goal[aria-current] span {
+  border-color: #6f8c59;
+  background: #edf2e0;
+  box-shadow: inset 0 0 0 1px #6f8c59;
+}
+button.goal[aria-current] {
+  cursor: default;
+  opacity: 1;
+}
+button.goal:focus-visible {
+  outline: 3px solid var(--terra);
+  outline-offset: 3px;
+  border-radius: 12px;
 }
 .profile-caption {
   display: flex;
@@ -1991,9 +2025,6 @@ dialog h2 .streak-badge {
   }
   .person-data {
     font-size: 9px;
-  }
-  .person-data .reached {
-    font-size: 8px;
   }
   .community-grid {
     grid-template-columns: 1fr;

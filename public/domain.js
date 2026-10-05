@@ -111,9 +111,7 @@ export function snapshot(readers, entries, now = new Date()) {
       return {
         id: p.id,
         name: p.name,
-        goal: Number(p.goal),
-        startGoal: Number(p.startGoal || p.goal),
-        pages: es.reduce((s, e) => s + Number(e.pages), 0),
+        ...paliers(es, goalSchedule(p)),
         // A reader's activity is the later of their signup and their most recent counted page addition;
         // no createdAt (legacy profile) counts as the oldest possible.
         lastActivity: [p.createdAt, s.times[0]].filter(Boolean).sort().at(-1) || '',
@@ -177,34 +175,73 @@ export function stats(readers, entries, now = new Date()) {
     bestDay: best && { date: best.date, pages: best.pages },
   };
 }
+// Leaderboards. The goal tab ranks Olympic-style: gold medals, then silver, then bronze, then the current palier.
 export function ranked(participants, metric) {
-  // The goal ranking uses the starting goal, so raising your goal never lowers your rank.
-  const score = (p) => (metric === 'pages' ? p.pages : metric === 'streak' ? p.streak : (p.pages / p.startGoal) * 100);
+  const score = (p) =>
+    metric === 'pages'
+      ? [p.pages]
+      : metric === 'streak'
+        ? [p.streak]
+        : [p.medals[500], p.medals[300], p.medals[100], p.palierPages / p.goal];
+  const cmp = (a, b) => {
+    const x = score(a),
+      y = score(b);
+    return y.reduce((d, v, i) => d || v - x[i], 0);
+  };
   const list = participants
     .filter((p) => (metric === 'streak' ? p.streak >= 2 : p.pages > 0))
-    .sort((a, b) => score(b) - score(a) || a.name.localeCompare(b.name, 'fr'));
-  let rank = 0,
-    previous = null;
+    .sort((a, b) => cmp(a, b) || a.name.localeCompare(b.name, 'fr'));
+  let rank = 0;
   return list.slice(0, 5).map((p, i) => {
-    const value = score(p);
-    if (value !== previous) rank = i + 1;
-    previous = value;
-    return { ...p, rank, score: value };
+    if (!i || cmp(list[i - 1], p)) rank = i + 1;
+    return { ...p, rank };
   });
 }
 // Once the common goal is reached, the counter aims at the next thousand (20 000 -> 21 000 -> 22 000...).
 export function collectiveTarget(total) {
   return total < CONFIG.collectiveGoal ? CONFIG.collectiveGoal : Math.floor(total / 1000) * 1000 + 1000;
 }
-// Personal goal steps: 100, 300, 500, 750, 1 000, then every 500 pages.
-export function nextGoal(goal) {
-  return [100, 300, 500, 750, 1000].find((n) => n > goal) ?? (Math.floor(goal / 500) + 1) * 500;
+// Personal goals work in successive paliers: filling a palier up to its goal earns that tier's medal (100 bronze,
+// 300 silver, 500 gold) and the excess carries into the next palier, which keeps the same goal by default.
+// Old goals outside the three tiers (750, 1 000... from the former "Viser plus haut") count as 500.
+export const tierGoal = (g) => (CONFIG.personalGoals.includes(Number(g)) ? Number(g) : CONFIG.personalGoals.at(-1));
+// The goals a reader had over time, oldest first: [{ goal, at }] (at = ISO time it applies from). Saved in
+// reader.goalHistory from the first change on; before that, the signup goal from createdAt. A legacy profile that
+// raised its goal (startGoal != goal) keeps startGoal until its first completed palier: at = null marks that step.
+export function goalSchedule(r) {
+  if (r.goalHistory?.length) return r.goalHistory;
+  const first = { goal: tierGoal(r.startGoal || r.goal), at: r.createdAt || '' };
+  return r.startGoal && Number(r.startGoal) !== Number(r.goal)
+    ? [first, { goal: tierGoal(r.goal), at: null }]
+    : [first];
 }
-// Goals a reader has already reached: every step from the starting goal up to (excluding) the current one.
-export function reachedGoals(startGoal, goal) {
-  const out = [];
-  for (let g = startGoal; g < goal && out.length < 100; g = nextGoal(g)) out.push(g);
-  return out;
+// Medals derived from the counted entries (a cancelled addition can take a medal back), walked oldest first with the
+// goal in force at each entry's time. Returns the medal counts, the current palier and the cumulative figures.
+export function paliers(entries, schedule) {
+  const medals = { 100: 0, 300: 0, 500: 0 },
+    goalAt = (t) =>
+      schedule.reduce(
+        (g, s) => (s.at === null ? (count ? tierGoal(s.goal) : g) : s.at <= t ? tierGoal(s.goal) : g),
+        tierGoal(schedule[0].goal),
+      );
+  let done = 0,
+    pages = 0,
+    count = 0,
+    goal = 0;
+  const fill = (t) => {
+    for (goal = goalAt(t); pages >= goal; goal = goalAt(t)) {
+      medals[goal]++;
+      count++;
+      done += goal;
+      pages -= goal;
+    }
+  };
+  for (const e of [...entries].sort((a, b) => a.createdAt.localeCompare(b.createdAt))) {
+    pages += Number(e.pages);
+    fill(e.createdAt);
+  }
+  fill('9999'); // the goal in force now applies to the current palier
+  return { pages: done + pages, goal, medals, palier: count + 1, palierPages: pages, done };
 }
 export function normalizedName(input) {
   const name = typeof input === 'string' ? input.normalize('NFC').trim().replace(/\s+/g, ' ') : '';

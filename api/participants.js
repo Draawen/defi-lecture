@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { CONFIG, challengeState, nextGoal, normalizedName, snapshot } from '../public/domain.js';
+import { CONFIG, challengeState, countedEntries, goalSchedule, normalizedName, paliers } from '../public/domain.js';
 import { HttpError, body, createReader, deleteReader, loadAll, route, updateReader, valid } from '../lib/db.js';
 
 const finished = () => challengeState(new Date()).status === 'finished';
@@ -14,11 +14,10 @@ export default route({
     await createReader(reader, key);
     return { participant: { id: reader.id, name, goal: reader.goal } };
   },
-  // Either a new first name, or "Viser plus haut": once the current goal is reached, move up exactly one step.
+  // Either a new first name, or a new goal for the current palier: 100, 300 or 500, above the pages it already has.
   PATCH: async (req) => {
     const b = body(req),
-      now = new Date(),
-      c = challengeState(now);
+      now = new Date();
     if ((b.goal === undefined) === (b.name === undefined))
       throw new HttpError(400, 'Envoi invalide. Ferme puis rouvre ton espace.');
     if (b.name !== undefined) {
@@ -27,17 +26,20 @@ export default route({
       const reader = await updateReader(b.participantId, (r) => (r.name === name ? r : { ...r, name }));
       return { ok: true, name: reader.name };
     }
-    if (c.status !== 'running')
-      throw new HttpError(403, c.status === 'scheduled' ? 'Le défi commence le 27 septembre.' : 'Le défi est terminé.');
-    const { readers, entries } = await loadAll();
-    const pages = snapshot(readers, entries, now).participants.find((p) => p.id === b.participantId)?.pages ?? 0;
+    if (finished()) throw new HttpError(403, 'Le défi est terminé.');
+    if (!CONFIG.personalGoals.includes(b.goal)) throw new HttpError(400, 'Choisis 100, 300 ou 500 pages.');
+    const { entries } = await loadAll();
     const reader = await updateReader(b.participantId, (r) => {
-      // A double tap resends the goal already saved: answer ok before checking the pages against it.
-      if (b.goal === r.goal) return r;
-      if (b.goal !== nextGoal(r.goal))
-        throw new HttpError(409, 'Ton objectif a déjà changé. Ferme puis rouvre ton espace.');
-      if (pages < r.goal) throw new HttpError(400, 'Atteins d’abord ton objectif actuel.');
-      return { ...r, goal: b.goal, startGoal: r.startGoal ?? r.goal };
+      // Checked against the reader just read: a double tap resending the goal in force is a harmless no-op.
+      const schedule = goalSchedule(r),
+        p = paliers(countedEntries([r], entries, now), schedule);
+      if (b.goal === p.goal) return r;
+      if (b.goal <= p.palierPages)
+        throw new HttpError(
+          400,
+          `Tu as déjà lu ${p.palierPages} pages dans ce palier : choisis un objectif plus haut.`,
+        );
+      return { ...r, goal: b.goal, goalHistory: [...schedule, { goal: b.goal, at: now.toISOString() }] };
     });
     return { ok: true, goal: reader.goal };
   },

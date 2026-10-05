@@ -1,8 +1,6 @@
 import {
   CONFIG,
   collectiveTarget,
-  nextGoal,
-  reachedGoals,
   parisDate,
   shiftDay,
   periodRange,
@@ -26,14 +24,20 @@ const esc = (s) =>
     /[&<>"']/g,
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
   );
-// Small medal with the highest goal already reached (nothing for a reader who never raised their goal).
-function goalMedal(p) {
-  const reached = reachedGoals(p.startGoal, p.goal);
-  if (!reached.length) return '';
-  const top = reached[reached.length - 1],
-    label = `Objectif de ${fmt(top)} pages atteint${reached.length > 1 ? ` (aussi ${reached.slice(0, -1).map(fmt).join(', ')})` : ''}`;
-  return `<span class="goal-medal" title="${esc(label)}" aria-label="${esc(label)}" role="img">${icon('medal')}${fmt(top)}</span>`;
+const MEDALS = [
+  [500, '🥇', 'or'],
+  [300, '🥈', 'argent'],
+  [100, '🥉', 'bronze'],
+];
+// Earned medals, gold first; from 2 on, the count is written small under the medal.
+function medalsHTML(p) {
+  const got = MEDALS.filter(([g]) => p.medals[g]);
+  if (!got.length) return '';
+  const label = 'Médailles : ' + got.map(([g, , n]) => `${n} ×${p.medals[g]}`).join(', ');
+  return `<span class="medals" role="img" title="${label}" aria-label="${label}">${got.map(([g, e]) => `<span class="medal">${e}${p.medals[g] > 1 ? `<small>${p.medals[g]}</small>` : ''}</span>`).join('')}</span>`;
 }
+// Progress in the current palier (the totals stay cumulative: completed goals + the current one).
+const palierPct = (p) => (p.palierPages / p.goal) * 100;
 const icon = (id) => `<svg class="icon" aria-hidden="true"><use href="#i-${id}"/></svg>`;
 const uid = () =>
   globalThis.crypto?.randomUUID?.() ||
@@ -243,7 +247,7 @@ function renderPeople() {
     ? ps
         .map(
           (p) =>
-            `<button class="person ${p.id === selected ? 'selected' : ''}" data-person="${esc(p.id)}" aria-label="${esc(p.name)}, ${p.pages} pages sur ${p.goal}. Ouvrir son espace"><div class="person-line">${avatar(p)}<div class="person-title"><div class="person-name">${esc(p.name)}</div>${p.id === selected ? '<div class="person-you">moi</div>' : ''}</div>${streakBadge(p)}</div><div class="person-data"><span><strong>${fmt(p.pages)}</strong> / ${fmt(p.goal)} p.</span><span class="person-status">${goalMedal(p)}${p.pages >= p.goal ? `<span class="reached">${icon('check')} atteint</span>` : `<span>${Math.round((p.pages / p.goal) * 100)} %</span>`}</span></div><div class="mini"><i style="width:${Math.min(100, (p.pages / p.goal) * 100)}%"></i></div></button>`,
+            `<button class="person ${p.id === selected ? 'selected' : ''}" data-person="${esc(p.id)}" aria-label="${esc(p.name)}, ${p.pages} pages sur ${p.done + p.goal}. Ouvrir son espace"><div class="person-line">${avatar(p)}<div class="person-title"><div class="person-name">${esc(p.name)}</div>${p.id === selected ? '<div class="person-you">moi</div>' : ''}</div>${streakBadge(p)}</div><div class="person-data"><span><strong>${fmt(p.pages)}</strong> / ${fmt(p.done + p.goal)} p.</span><span class="person-status">${medalsHTML(p)}<span>${Math.floor(palierPct(p))} %</span></span></div><div class="mini"><i style="width:${palierPct(p)}%"></i></div></button>`,
         )
         .join('')
     : `<p class="empty-state">${q ? 'Aucun prénom trouvé.' : 'Aucun inscrit pour l’instant.'}</p>`;
@@ -265,11 +269,11 @@ function renderLeaders() {
     ? ps
         .map(
           (p) =>
-            `<button class="leader-row" data-person="${esc(p.id)}"><span class="rank">${String(p.rank).padStart(2, '0')}</span>${avatar(p)}<span class="leader-name">${esc(p.name)}</span><span class="leader-value">${tab === 'pages' ? fmt(p.pages) + ' p.' : tab === 'streak' ? `${p.streak}🔥${p.atRisk ? '⏳' : ''}` : Math.round(p.score) + ' %'}</span></button>`,
+            `<button class="leader-row" data-person="${esc(p.id)}"><span class="rank">${String(p.rank).padStart(2, '0')}</span>${avatar(p)}<span class="leader-name">${esc(p.name)}</span><span class="leader-value">${tab === 'pages' ? fmt(p.pages) + ' p.' : tab === 'streak' ? `${p.streak}🔥${p.atRisk ? '⏳' : ''}` : `${medalsHTML(p)}${Math.floor(palierPct(p))} %`}</span></button>`,
         )
         .join('')
     : `<p class="empty-state">${tab === 'streak' ? 'Aucune série pour l’instant.' : 'Aucune lecture pour l’instant.'}</p>`;
-  const caption = tab === 'goal' ? 'En % de l’objectif de départ de chacun.' : '';
+  const caption = tab === 'goal' ? 'Classés par médailles, puis par avancée du palier en cours.' : '';
   $('#leader-caption').textContent = caption;
   $('#leader-caption').hidden = !caption;
 }
@@ -359,15 +363,29 @@ function historyHTML(p, limit = 7) {
 function profileHead(p, editing, c) {
   return editing
     ? `<form id="name-form" class="name-form" data-id="${esc(p.id)}"><label class="field-label" id="dialog-title" for="name-input">Ton prénom</label><input class="field name-field" id="name-input" name="name" value="${esc(p.name)}" required maxlength="32" autocomplete="off" autocapitalize="words" spellcheck="false"><div class="form-error" role="alert" hidden></div><div class="edit-actions"><button class="button button-green" type="submit">Enregistrer</button><button class="button button-outline" type="button" data-action="edit-cancel">Annuler</button></div><button type="button" class="delete-profile" data-action="delete-profile">Supprimer ce profil</button></form>`
-    : `<div class="profile-head"><h2 id="dialog-title">${esc(p.name)}${p.pages >= p.goal ? ' ✧' : ''}${streakBadge(p)}</h2>${c.status === 'finished' ? '' : `<button type="button" class="edit-name" data-action="edit-name" aria-label="Modifier le profil">${icon('edit')}Modifier</button>`}</div>`;
+    : `<div class="profile-head"><h2 id="dialog-title">${esc(p.name)}${streakBadge(p)}</h2>${c.status === 'finished' ? '' : `<button type="button" class="edit-name" data-action="edit-name" aria-label="Modifier le profil">${icon('edit')}Modifier</button>`}</div>`;
+}
+// "Changer d'objectif": the three tiers for the current palier, except a goal it has already passed.
+function goalChoiceHTML(p) {
+  const passed = (g) => g !== p.goal && g <= p.palierPages;
+  return `<button type="button" class="button button-outline full goal-change" data-action="goal-choices" aria-expanded="false" aria-controls="goal-choices">${icon('medal')}Changer d’objectif</button><div id="goal-choices" hidden><div class="goals" role="group" aria-label="Choisir mon objectif">${[
+    ...MEDALS,
+  ]
+    .reverse()
+    .map(
+      ([g, e]) =>
+        `<button type="button" class="goal" data-action="set-goal" data-id="${esc(p.id)}" data-goal="${g}"${g === p.goal ? ' aria-current="true" disabled' : passed(g) ? ' disabled' : ''}><span>${e}<b>${g}</b><small>${g === p.goal ? 'actuel' : passed(g) ? 'déjà dépassé' : 'pages'}</small></span></button>`,
+    )
+    .join(
+      '',
+    )}</div>${CONFIG.personalGoals.some(passed) ? `<p class="hint">Tu as déjà lu ${p.palierPages} pages dans ce palier : choisis un objectif plus haut.</p>` : ''}<div class="form-error" role="alert" hidden></div></div>`;
 }
 function renderProfile(p, editing = false) {
   p = dynamic(p);
-  const c = challengeState(clock()),
-    remaining = Math.max(0, p.goal - p.pages);
+  const c = challengeState(clock());
   activeProfile = p;
   showDialog(
-    `${profileHead(p, editing, c)}<div class="profile-total">${fmt(p.pages)} <small>/ ${fmt(p.goal)} pages</small></div><div class="mini profile-progress" role="progressbar" aria-label="Progression de ${esc(p.name)}" aria-valuemin="0" aria-valuemax="${p.goal}" aria-valuenow="${Math.min(p.goal, p.pages)}"><i style="width:${Math.min(100, (p.pages / p.goal) * 100)}%"></i></div><div class="profile-caption"><span>${remaining ? `Encore ${fmt(remaining)} pages.` : 'Objectif atteint !'}</span><span class="profile-pct">${goalMedal(p)}${Math.round((p.pages / p.goal) * 100)} %</span></div>${c.status === 'running' && !remaining ? `<button type="button" class="button button-primary full" data-action="raise-goal" data-id="${esc(p.id)}" data-goal="${nextGoal(p.goal)}">${icon('medal')}Viser plus haut : ${fmt(nextGoal(p.goal))} pages</button><div class="form-error" role="alert" hidden></div>` : ''}<div class="profile-streak"><strong>Cette semaine</strong>${weekHTML(p)}<button type="button" class="cal-toggle" data-action="calendar" aria-expanded="false" aria-controls="profile-calendar">Voir les 90 jours</button><div id="profile-calendar" hidden>${calendarHTML(p)}</div></div>${c.status === 'running' ? `<form id="pages-form" data-id="${esc(p.id)}" data-request="${uid()}"><label class="field-label" for="pages-input">Nouvelles pages lues (pas ton total)</label><div class="quick"><input class="field" id="pages-input" name="pages" type="number" inputmode="numeric" min="1" max="10000" step="1" required placeholder="Ex. 12"><button class="button button-green" type="submit">Ajouter</button></div><div class="form-error" role="alert" hidden></div></form>` : `<p class="profile-info">${c.status === 'scheduled' ? 'Ajout des pages à partir de dimanche.' : 'Le défi est terminé. Merci !'}</p>`}<div class="history"><h3>Historique</h3><div id="profile-history">${historyHTML(p)}</div>${p.entries.length > 7 ? `<button class="more-history" data-action="more-history">Tout voir (${p.entries.length})</button>` : ''}</div>`,
+    `${profileHead(p, editing, c)}<div class="profile-palier"><span>Palier ${p.palier} · objectif ${fmt(p.goal)} pages</span>${medalsHTML(p)}</div><div class="profile-total">${fmt(p.pages)} <small>/ ${fmt(p.done + p.goal)} pages</small></div><div class="mini profile-progress" role="progressbar" aria-label="Progression de ${esc(p.name)} dans le palier ${p.palier}" aria-valuemin="0" aria-valuemax="${p.goal}" aria-valuenow="${p.palierPages}"><i style="width:${palierPct(p)}%"></i></div><div class="profile-caption"><span>Encore ${plural(p.goal - p.palierPages, 'page')}.</span><span>${Math.floor(palierPct(p))} %</span></div>${c.status === 'finished' ? '' : goalChoiceHTML(p)}<div class="profile-streak"><strong>Cette semaine</strong>${weekHTML(p)}<button type="button" class="cal-toggle" data-action="calendar" aria-expanded="false" aria-controls="profile-calendar">Voir les 90 jours</button><div id="profile-calendar" hidden>${calendarHTML(p)}</div></div>${c.status === 'running' ? `<form id="pages-form" data-id="${esc(p.id)}" data-request="${uid()}"><label class="field-label" for="pages-input">Nouvelles pages lues (pas ton total)</label><div class="quick"><input class="field" id="pages-input" name="pages" type="number" inputmode="numeric" min="1" max="10000" step="1" required placeholder="Ex. 12"><button class="button button-green" type="submit">Ajouter</button></div><div class="form-error" role="alert" hidden></div></form>` : `<p class="profile-info">${c.status === 'scheduled' ? 'Ajout des pages à partir de dimanche.' : 'Le défi est terminé. Merci !'}</p>`}<div class="history"><h3>Historique</h3><div id="profile-history">${historyHTML(p)}</div>${p.entries.length > 7 ? `<button class="more-history" data-action="more-history">Tout voir (${p.entries.length})</button>` : ''}</div>`,
   );
 }
 async function openProfile(id) {
@@ -379,7 +397,6 @@ async function openProfile(id) {
   renderPeople();
   renderProfile(participant);
 }
-// "Viser plus haut": errors show under the button, like the pages form.
 // "Voir tout": every counted addition since the start, newest first.
 async function showAllActivity() {
   const n = ++profileRequest;
@@ -806,8 +823,9 @@ async function showStats() {
   }
   renderEvolution();
 }
-async function raiseGoal(button) {
-  const error = button.nextElementSibling,
+// A new goal for the current palier; errors show under the choices, like the pages form.
+async function changeGoal(button) {
+  const error = $('#goal-choices .form-error'),
     goal = Number(button.dataset.goal);
   if (button.disabled) return;
   error.hidden = true;
@@ -889,7 +907,12 @@ document.addEventListener('click', async (event) => {
     if (a?.dataset.action?.startsWith('range-')) await rangeAction(a);
     const tip = event.target.closest('[data-tip]');
     if (tip) showTip(tip);
-    if (a?.dataset.action === 'raise-goal') await raiseGoal(a);
+    if (a?.dataset.action === 'goal-choices') {
+      const box = $('#goal-choices');
+      box.hidden = !box.hidden;
+      a.setAttribute('aria-expanded', String(!box.hidden));
+    }
+    if (a?.dataset.action === 'set-goal') await changeGoal(a);
     if (a?.dataset.action === 'edit-name' && activeProfile) {
       renderProfile(activeProfile, true);
       $('#name-input').focus();

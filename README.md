@@ -36,15 +36,16 @@ chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
 - **Compteur commun** des 20 000 pages. Dès le premier jour, la page d'accueil s'efface d'elle-même pour laisser
   le compteur et les lecteurs en haut. Une fois les 20 000 pages lues, il vise le millier suivant (21 000, puis
   22 000…).
-- **Viser plus haut** : quand un lecteur atteint son objectif, un bouton dans son profil lui propose le palier
-  suivant (300, 500, 750, 1 000, puis tous les 500).
+- **Paliers et médailles** : chaque palier rempli jusqu'à l'objectif rapporte sa médaille (🥉 100, 🥈 300, 🥇 500
+  pages) ; le surplus passe dans le palier suivant, qui garde le même objectif. « Changer d'objectif » dans le profil
+  permet de passer à 100, 300 ou 500 pages à tout moment, sauf à un objectif déjà dépassé dans le palier en cours.
 - **Séries 🔥** : jours de lecture d'affilée. La série casse à minuit à la fin du jour qui suit la dernière lecture ;
   le sablier ⏳ apparaît 18 h après la dernière lecture.
 - **Profil modifiable** : chacun peut corriger son prénom ou supprimer son profil, après une confirmation.
 - **Statistiques** : courbe des pages lues avec période et comparaison au choix, pages par jour, lecteurs actifs,
   heures de lecture ; « Voir tout » liste tous les ajouts.
 - **Calendrier des 90 jours** dans chaque profil, et classements (pages, séries, objectif). Le classement
-  « Objectif » se calcule sur l'objectif de départ : viser plus haut ne fait jamais reculer.
+  « Objectif » compte les médailles (l'or d'abord, puis l'argent, puis le bronze), puis l'avancée du palier en cours.
 - **Installable sur l'écran d'accueil** du téléphone, comme une app ; on l'actualise en tirant la page vers le bas.
 
 ## Organisation du code
