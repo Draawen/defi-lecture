@@ -191,6 +191,8 @@
   --line: #e0e3d7;
   --terra: #ba6349;
   --peach: #f0ddc8;
+  --scroll-thumb: #bac4ac;
+  --scroll-thumb-hover: #8c9d7c;
   --serif: Georgia, 'Times New Roman', serif;
   --sans: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
@@ -199,6 +201,41 @@
 }
 html {
   scroll-behavior: smooth;
+}
+/* Barres de défilement discrètes (ordinateur ; sur téléphone elles flottent déjà). */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb) transparent;
+  }
+  html {
+    scrollbar-color: var(--scroll-thumb) var(--paper);
+  }
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  min-height: 40px;
+  min-width: 40px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--scroll-thumb) padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover) padding-box;
+}
+html::-webkit-scrollbar {
+  width: 12px;
+}
+html::-webkit-scrollbar-track {
+  background: var(--paper);
 }
 body {
   margin: 0;
@@ -1093,22 +1130,38 @@ dialog {
   padding: 0;
   width: min(445px, calc(100% - 26px));
   max-height: calc(100dvh - 40px);
-  overflow: auto;
+  overflow: hidden;
   color: var(--ink);
   background: var(--white);
   box-shadow: 0 30px 100px #173d3438;
+}
+dialog:not(#confirm) {
+  overscroll-behavior: contain;
+}
+#confirm {
+  overflow: auto;
+}
+#dialog[open] {
+  display: flex;
+  flex-direction: column;
 }
 dialog::backdrop {
   background: #172d2566;
   backdrop-filter: blur(3px);
 }
 #dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   padding: 29px;
 }
 .dialog-close {
   position: absolute;
   right: 13px;
   top: 13px;
+  z-index: 2;
   width: 33px;
   height: 33px;
   display: grid;
@@ -2292,7 +2345,6 @@ dialog.dialog-full #dialog-body {
 .chart-scroll {
   overflow-x: auto;
   flex: 1;
-  scrollbar-width: thin;
 }
 .chart .grid {
   stroke: var(--line);
@@ -2693,4 +2745,23 @@ circle.line-yesterday {
 .range-sheet.rc-open {
   left: 0;
   right: 0;
+}
+/* Ordinateur : la barre du dialogue est détachée des bords arrondis de la carte. */
+@media (hover: hover) and (pointer: fine) {
+  #dialog-body {
+    margin: 12px 4px 12px 0;
+    padding: 17px 25px 17px 29px;
+  }
+  dialog.dialog-full #dialog-body {
+    margin: 8px 4px 8px 0;
+    padding: 14px 10px 20px 14px;
+  }
+  #dialog-body::-webkit-scrollbar-track {
+    margin-block: 6px;
+  }
+}
+@media (hover: hover) and (pointer: fine) and (max-width: 580px) {
+  #dialog-body {
+    padding: 14px 18px 14px 22px;
+  }
 }

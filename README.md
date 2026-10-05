@@ -3,15 +3,15 @@
 Le défi lecture de l'église : **90 jours** (27 septembre → 25 décembre 2026), **20 000 pages** à lire ensemble,
 chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
 
-|                                  Avant le départ                                   |                                       Pendant le défi                                       |                                       Profil d'un lecteur                                        |
-| :--------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------: |
-| <img src="docs/avant-depart.jpg" width="250" alt="Page d'accueil avant le départ"> | <img src="docs/pendant-le-defi.jpg" width="250" alt="Compteur et lecteurs pendant le défi"> | <img src="docs/profil.jpg" width="250" alt="Profil avec la série et le calendrier des 90 jours"> |
+|                                  Avant le départ                                   |                                                  Compteur de 20 000 pages                                                  |                                                   Profil d'un lecteur                                                    |
+| :--------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------: |
+| <img src="docs/avant-depart.jpg" width="250" alt="Page d'accueil avant le départ"> | <img src="docs/compteur-20000.jpg" width="250" alt="Compteur commun à 3 826 pages sur 20 000, avec les premiers lecteurs"> | <img src="docs/profil.jpg" width="250" alt="Profil avec le palier, la médaille, la série et le calendrier des 90 jours"> |
 
-**Aller plus loin**
+**Médailles et objectifs**
 
-|                                              Palier 3 000 atteint                                               |                                                         Viser plus haut                                                          |                                                              Nouvel objectif                                                              |
-| :-------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: |
-| <img src="docs/palier-commun.jpg" width="250" alt="Compteur à 3 453 pages sur 4 000, palier des 3 000 atteint"> | <img src="docs/viser-plus-haut.jpg" width="250" alt="Profil d'une lectrice à 320 pages sur 300, avec le bouton Viser plus haut"> | <img src="docs/nouvel-objectif.jpg" width="250" alt="Le même profil avec son nouvel objectif de 500 pages et le message de confirmation"> |
+|                                                                       Médailles et « Changer d'objectif »                                                                       |
+| :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| <img src="docs/medailles.jpg" width="250" alt="Profil d'une lectrice avec une médaille d'or, d'argent et de bronze, et les trois objectifs de 100, 300 et 500 pages à choisir"> |
 
 **Son profil**
 
