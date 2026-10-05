@@ -873,6 +873,32 @@ svg {
   width: 12px;
   height: 12px;
 }
+.person-status,
+.profile-pct {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.goal-medal {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--terra);
+  font-weight: 500;
+}
+.goal-medal .icon {
+  width: 11px;
+  height: 11px;
+  stroke-width: 1.5;
+}
+.profile-pct .goal-medal {
+  font-size: 11px;
+}
+.profile-pct .goal-medal .icon {
+  width: 13px;
+  height: 13px;
+}
 .mini {
   height: 4px;
   background: #e8ebdf;

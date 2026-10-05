@@ -2,6 +2,7 @@ import {
   CONFIG,
   collectiveTarget,
   nextGoal,
+  reachedGoals,
   parisDate,
   shiftDay,
   periodRange,
@@ -25,6 +26,14 @@ const esc = (s) =>
     /[&<>"']/g,
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
   );
+// Small medal with the highest goal already reached (nothing for a reader who never raised their goal).
+function goalMedal(p) {
+  const reached = reachedGoals(p.startGoal, p.goal);
+  if (!reached.length) return '';
+  const top = reached[reached.length - 1],
+    label = `Objectif de ${fmt(top)} pages atteint${reached.length > 1 ? ` (aussi ${reached.slice(0, -1).map(fmt).join(', ')})` : ''}`;
+  return `<span class="goal-medal" title="${esc(label)}" aria-label="${esc(label)}" role="img">${icon('medal')}${fmt(top)}</span>`;
+}
 const icon = (id) => `<svg class="icon" aria-hidden="true"><use href="#i-${id}"/></svg>`;
 const uid = () =>
   globalThis.crypto?.randomUUID?.() ||
@@ -191,7 +200,7 @@ function renderClock() {
   );
 }
 function render() {
-  // While the challenge runs, the counter aims at the next thousand once 3 000 is reached.
+  // While the challenge runs, the counter aims at the next thousand once 20 000 is reached.
   const target = phase === 'running' ? collectiveTarget(state.totalPages) : CONFIG.collectiveGoal,
     pct = (state.totalPages / target) * 100,
     step = target / 30,
@@ -234,7 +243,7 @@ function renderPeople() {
     ? ps
         .map(
           (p) =>
-            `<button class="person ${p.id === selected ? 'selected' : ''}" data-person="${esc(p.id)}" aria-label="${esc(p.name)}, ${p.pages} pages sur ${p.goal}. Ouvrir son espace"><div class="person-line">${avatar(p)}<div class="person-title"><div class="person-name">${esc(p.name)}</div>${p.id === selected ? '<div class="person-you">moi</div>' : ''}</div>${streakBadge(p)}</div><div class="person-data"><span><strong>${fmt(p.pages)}</strong> / ${fmt(p.goal)} p.</span>${p.pages >= p.goal ? `<span class="reached">${icon('check')} atteint</span>` : `<span>${Math.round((p.pages / p.goal) * 100)} %</span>`}</div><div class="mini"><i style="width:${Math.min(100, (p.pages / p.goal) * 100)}%"></i></div></button>`,
+            `<button class="person ${p.id === selected ? 'selected' : ''}" data-person="${esc(p.id)}" aria-label="${esc(p.name)}, ${p.pages} pages sur ${p.goal}. Ouvrir son espace"><div class="person-line">${avatar(p)}<div class="person-title"><div class="person-name">${esc(p.name)}</div>${p.id === selected ? '<div class="person-you">moi</div>' : ''}</div>${streakBadge(p)}</div><div class="person-data"><span><strong>${fmt(p.pages)}</strong> / ${fmt(p.goal)} p.</span><span class="person-status">${goalMedal(p)}${p.pages >= p.goal ? `<span class="reached">${icon('check')} atteint</span>` : `<span>${Math.round((p.pages / p.goal) * 100)} %</span>`}</span></div><div class="mini"><i style="width:${Math.min(100, (p.pages / p.goal) * 100)}%"></i></div></button>`,
         )
         .join('')
     : `<p class="empty-state">${q ? 'Aucun prénom trouvé.' : 'Aucun inscrit pour l’instant.'}</p>`;
@@ -358,7 +367,7 @@ function renderProfile(p, editing = false) {
     remaining = Math.max(0, p.goal - p.pages);
   activeProfile = p;
   showDialog(
-    `${profileHead(p, editing, c)}<div class="profile-total">${fmt(p.pages)} <small>/ ${fmt(p.goal)} pages</small></div><div class="mini profile-progress" role="progressbar" aria-label="Progression de ${esc(p.name)}" aria-valuemin="0" aria-valuemax="${p.goal}" aria-valuenow="${Math.min(p.goal, p.pages)}"><i style="width:${Math.min(100, (p.pages / p.goal) * 100)}%"></i></div><div class="profile-caption"><span>${remaining ? `Encore ${fmt(remaining)} pages.` : 'Objectif atteint !'}</span><span>${Math.round((p.pages / p.goal) * 100)} %</span></div>${c.status === 'running' && !remaining ? `<button type="button" class="button button-primary full" data-action="raise-goal" data-id="${esc(p.id)}" data-goal="${nextGoal(p.goal)}">${icon('medal')}Viser plus haut : ${fmt(nextGoal(p.goal))} pages</button><div class="form-error" role="alert" hidden></div>` : ''}<div class="profile-streak"><strong>Cette semaine</strong>${weekHTML(p)}<button type="button" class="cal-toggle" data-action="calendar" aria-expanded="false" aria-controls="profile-calendar">Voir les 90 jours</button><div id="profile-calendar" hidden>${calendarHTML(p)}</div></div>${c.status === 'running' ? `<form id="pages-form" data-id="${esc(p.id)}" data-request="${uid()}"><label class="field-label" for="pages-input">Nouvelles pages lues (pas ton total)</label><div class="quick"><input class="field" id="pages-input" name="pages" type="number" inputmode="numeric" min="1" max="10000" step="1" required placeholder="Ex. 12"><button class="button button-green" type="submit">Ajouter</button></div><div class="form-error" role="alert" hidden></div></form>` : `<p class="profile-info">${c.status === 'scheduled' ? 'Ajout des pages à partir de dimanche.' : 'Le défi est terminé. Merci !'}</p>`}<div class="history"><h3>Historique</h3><div id="profile-history">${historyHTML(p)}</div>${p.entries.length > 7 ? `<button class="more-history" data-action="more-history">Tout voir (${p.entries.length})</button>` : ''}</div>`,
+    `${profileHead(p, editing, c)}<div class="profile-total">${fmt(p.pages)} <small>/ ${fmt(p.goal)} pages</small></div><div class="mini profile-progress" role="progressbar" aria-label="Progression de ${esc(p.name)}" aria-valuemin="0" aria-valuemax="${p.goal}" aria-valuenow="${Math.min(p.goal, p.pages)}"><i style="width:${Math.min(100, (p.pages / p.goal) * 100)}%"></i></div><div class="profile-caption"><span>${remaining ? `Encore ${fmt(remaining)} pages.` : 'Objectif atteint !'}</span><span class="profile-pct">${goalMedal(p)}${Math.round((p.pages / p.goal) * 100)} %</span></div>${c.status === 'running' && !remaining ? `<button type="button" class="button button-primary full" data-action="raise-goal" data-id="${esc(p.id)}" data-goal="${nextGoal(p.goal)}">${icon('medal')}Viser plus haut : ${fmt(nextGoal(p.goal))} pages</button><div class="form-error" role="alert" hidden></div>` : ''}<div class="profile-streak"><strong>Cette semaine</strong>${weekHTML(p)}<button type="button" class="cal-toggle" data-action="calendar" aria-expanded="false" aria-controls="profile-calendar">Voir les 90 jours</button><div id="profile-calendar" hidden>${calendarHTML(p)}</div></div>${c.status === 'running' ? `<form id="pages-form" data-id="${esc(p.id)}" data-request="${uid()}"><label class="field-label" for="pages-input">Nouvelles pages lues (pas ton total)</label><div class="quick"><input class="field" id="pages-input" name="pages" type="number" inputmode="numeric" min="1" max="10000" step="1" required placeholder="Ex. 12"><button class="button button-green" type="submit">Ajouter</button></div><div class="form-error" role="alert" hidden></div></form>` : `<p class="profile-info">${c.status === 'scheduled' ? 'Ajout des pages à partir de dimanche.' : 'Le défi est terminé. Merci !'}</p>`}<div class="history"><h3>Historique</h3><div id="profile-history">${historyHTML(p)}</div>${p.entries.length > 7 ? `<button class="more-history" data-action="more-history">Tout voir (${p.entries.length})</button>` : ''}</div>`,
   );
 }
 async function openProfile(id) {

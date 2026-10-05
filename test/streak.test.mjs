@@ -1,7 +1,7 @@
 // Streak rule: consecutive Paris days; breaks at midnight at the end of the day after the last reading.
 // Hourglass: from 18 h after the last reading (6 h before the 24 h mark) until that break.
 import assert from 'node:assert/strict';
-import { collectiveTarget, nextGoal, snapshot, streakFor } from '../public/domain.js';
+import { collectiveTarget, nextGoal, reachedGoals, snapshot, streakFor } from '../public/domain.js';
 const at = (iso) => new Date(iso);
 const read = (...isos) =>
   isos.map((createdAt) => ({
@@ -54,11 +54,17 @@ s = streakFor(read('2026-12-23T19:00:00Z', '2026-12-24T19:00:00Z', '2026-12-25T1
 assert.equal(s.streak, 3);
 assert.equal(s.atRisk, false);
 
-// Collective counter: 3 000, then the next thousand once each one is reached.
-assert.deepEqual([0, 2999, 3000, 3999, 4000].map(collectiveTarget), [3000, 3000, 4000, 4000, 5000]);
+// Collective counter: 20 000, then the next thousand once each one is reached.
+assert.deepEqual([0, 19999, 20000, 20999, 21000].map(collectiveTarget), [20000, 20000, 21000, 21000, 22000]);
 // Personal goal steps, and the next step above a goal outside the list.
 assert.deepEqual([100, 300, 500, 750, 1000, 1500].map(nextGoal), [300, 500, 750, 1000, 1500, 2000]);
 assert.deepEqual([50, 200, 1200].map(nextGoal), [100, 300, 1500]);
+// Goals already reached: every step from the starting goal up to, but excluding, the current goal.
+assert.deepEqual(reachedGoals(100, 300), [100]);
+assert.deepEqual(reachedGoals(100, 500), [100, 300]);
+assert.deepEqual(reachedGoals(500, 750), [500]);
+assert.deepEqual(reachedGoals(300, 300), []);
+assert.deepEqual(reachedGoals(500, 1500), [500, 750, 1000]);
 
 // Readers list order: most recently active first (signup time, or later counted-entry time if more recent).
 const readers3 = [

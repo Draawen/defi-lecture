@@ -3,7 +3,7 @@ export const CONFIG = Object.freeze({
   startDate: '2026-09-27',
   endDate: '2026-12-25',
   timeZone: 'Europe/Paris',
-  collectiveGoal: 3000,
+  collectiveGoal: 20000,
   personalGoals: [100, 300, 500],
 });
 const DAY = 86400000;
@@ -192,13 +192,19 @@ export function ranked(participants, metric) {
     return { ...p, rank, score: value };
   });
 }
-// Once the common goal is reached, the counter aims at the next thousand (3 000 -> 4 000 -> 5 000...).
+// Once the common goal is reached, the counter aims at the next thousand (20 000 -> 21 000 -> 22 000...).
 export function collectiveTarget(total) {
   return total < CONFIG.collectiveGoal ? CONFIG.collectiveGoal : Math.floor(total / 1000) * 1000 + 1000;
 }
 // Personal goal steps: 100, 300, 500, 750, 1 000, then every 500 pages.
 export function nextGoal(goal) {
   return [100, 300, 500, 750, 1000].find((n) => n > goal) ?? (Math.floor(goal / 500) + 1) * 500;
+}
+// Goals a reader has already reached: every step from the starting goal up to (excluding) the current one.
+export function reachedGoals(startGoal, goal) {
+  const out = [];
+  for (let g = startGoal; g < goal && out.length < 100; g = nextGoal(g)) out.push(g);
+  return out;
 }
 export function normalizedName(input) {
   const name = typeof input === 'string' ? input.normalize('NFC').trim().replace(/\s+/g, ' ') : '';

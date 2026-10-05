@@ -68,7 +68,7 @@ assert.deepEqual(
   ],
 );
 assert.equal(s.totalPages, 38);
-assert.equal(s.target, 3000);
+assert.equal(s.target, 20000);
 assert.equal(s.hours.length, 24);
 assert.deepEqual(
   s.hours.filter((h) => h.additions).map((h) => [h.hour, h.additions, h.pages]),

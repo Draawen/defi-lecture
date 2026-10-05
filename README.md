@@ -1,6 +1,6 @@
 # Le défi lecture
 
-Le défi lecture de l'église : **90 jours** (27 septembre → 25 décembre 2026), **3 000 pages** à lire ensemble,
+Le défi lecture de l'église : **90 jours** (27 septembre → 25 décembre 2026), **20 000 pages** à lire ensemble,
 chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
 
 |                                  Avant le départ                                   |                                       Pendant le défi                                       |                                       Profil d'un lecteur                                        |
@@ -33,9 +33,9 @@ chacun à son rythme. En ligne : **https://defi-lecture.vercel.app**
 - **Liste des lecteurs** triée par activité la plus récente (qui vient d'ajouter des pages en premier ; avant le
   départ, les inscriptions les plus récentes en premier).
 - **Ajout des pages lues** à partir du 27 septembre ; chaque ajout peut être annulé depuis l'historique.
-- **Compteur commun** des 3 000 pages. Dès le premier jour, la page d'accueil s'efface d'elle-même pour laisser
-  le compteur et les lecteurs en haut. Une fois les 3 000 pages lues, il vise le millier suivant (4 000, puis
-  5 000…).
+- **Compteur commun** des 20 000 pages. Dès le premier jour, la page d'accueil s'efface d'elle-même pour laisser
+  le compteur et les lecteurs en haut. Une fois les 20 000 pages lues, il vise le millier suivant (21 000, puis
+  22 000…).
 - **Viser plus haut** : quand un lecteur atteint son objectif, un bouton dans son profil lui propose le palier
   suivant (300, 500, 750, 1 000, puis tous les 500).
 - **Séries 🔥** : jours de lecture d'affilée. La série casse à minuit à la fin du jour qui suit la dernière lecture ;
